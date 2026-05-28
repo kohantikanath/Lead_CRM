@@ -8,25 +8,36 @@ Mini Lead CRM for the Superleap frontend intern assessment.
 Lead_CRM/
   frontend/              # Next.js + TypeScript + Tailwind UI
   backend/
-    mock-server/         # Provided Express mock API
+    api/                 # Provided Express API for local assessment data
 ```
 
 ## Task 0 Checklist
 
 - [x] Clone empty GitHub repository
 - [x] Create separate `frontend` and `backend` folders
-- [x] Add provided mock server under `backend/mock-server`
+- [x] Add provided API server under `backend/api`
 - [x] Scaffold Next.js TypeScript Tailwind frontend
 - [x] Add environment example
 - [x] Confirm frontend and backend run locally
 - [x] Commit Task 0 setup
 
+## Task 1 Checklist
+
+- [x] Rename backend folder to `backend/api`
+- [x] Create `Lead` TypeScript model
+- [x] Create lead status constants
+- [x] Create API client error handling
+- [x] Add lead API functions
+- [x] Add status transition helpers
+- [x] Verify lint/build health
+- [x] Commit Task 1 API layer
+
 ## Local Development
 
-Run the mock API:
+Run the local API:
 
 ```bash
-cd backend/mock-server
+cd backend/api
 npm install
 npm start
 ```
