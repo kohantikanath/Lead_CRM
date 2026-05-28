@@ -1,18 +1,10 @@
 import Link from "next/link";
 import { LeadFilters } from "@/app/leads/lead-filters";
+import { StatusBadge } from "@/components/leads/status-badge";
 import { getLeads } from "@/lib/api/leads";
-import { STATUS_LABELS } from "@/lib/leads/status";
 import { LEAD_STATUSES, type Lead, type LeadStatus } from "@/types/lead";
 
 export const dynamic = "force-dynamic";
-
-const statusStyles: Record<LeadStatus, string> = {
-  NEW: "border-sky-200 bg-sky-50 text-sky-700",
-  CONTACTED: "border-amber-200 bg-amber-50 text-amber-700",
-  QUALIFIED: "border-emerald-200 bg-emerald-50 text-emerald-700",
-  CONVERTED: "border-violet-200 bg-violet-50 text-violet-700",
-  LOST: "border-rose-200 bg-rose-50 text-rose-700",
-};
 
 function formatUpdatedAt(value: string) {
   return new Intl.DateTimeFormat("en", {
@@ -30,16 +22,6 @@ function getLeadInitials(name: string) {
     .join("")
     .slice(0, 2)
     .toUpperCase();
-}
-
-function StatusBadge({ status }: { status: LeadStatus }) {
-  return (
-    <span
-      className={`inline-flex h-7 items-center rounded-full border px-2.5 text-xs font-medium ${statusStyles[status]}`}
-    >
-      {STATUS_LABELS[status]}
-    </span>
-  );
 }
 
 function parseStatuses(value: string | string[] | undefined) {

@@ -68,6 +68,16 @@ Lead_CRM/
 - [x] Verified lint/build/live create flow
 - [x] Committed Task 4 create lead
 
+## Task 5 Checklist
+
+- [x] Added `/leads/[id]` detail route
+- [x] Added `/leads/[id]/edit` route
+- [x] Reused shared lead form for editing
+- [x] Added missing lead state
+- [x] Added detail loading/error states
+- [x] Verified lint/build/live detail edit
+- [x] Committed Task 5 view edit lead
+
 ## Local Development
 
 Run the local API:

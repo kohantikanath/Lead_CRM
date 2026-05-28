@@ -91,7 +91,7 @@ export function LeadForm({ mode, lead }: LeadFormProps) {
         await updateLead(lead.id, payload);
       }
 
-      router.push("/leads");
+      router.push(mode === "edit" && lead ? `/leads/${lead.id}` : "/leads");
       router.refresh();
     } catch (error) {
       setServerError(
