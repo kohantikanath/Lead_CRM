@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { LeadFilters } from "@/app/leads/lead-filters";
+import { DeleteLeadButton } from "@/components/leads/delete-lead-button";
 import { StatusBadge } from "@/components/leads/status-badge";
 import { getLeads } from "@/lib/api/leads";
 import { LEAD_STATUSES, type Lead, type LeadStatus } from "@/types/lead";
@@ -132,12 +133,7 @@ function LeadsTable({
                   >
                     Edit
                   </Link>
-                  <button
-                    type="button"
-                    className="rounded-md border border-rose-200 px-3 py-1.5 text-xs font-medium text-rose-700 hover:bg-rose-50"
-                  >
-                    Delete
-                  </button>
+                  <DeleteLeadButton leadId={lead.id} leadName={lead.name} />
                 </div>
               </td>
             </tr>

@@ -78,6 +78,16 @@ Lead_CRM/
 - [x] Verified lint/build/live detail edit
 - [x] Committed Task 5 view edit lead
 
+## Task 6 Checklist
+
+- [x] Added reusable delete confirmation component
+- [x] Wired delete action into leads table
+- [x] Added delete loading state
+- [x] Added delete error state
+- [x] Added list refresh after delete
+- [x] Verified lint/build/live delete
+- [x] Committed Task 6 delete lead
+
 ## Local Development
 
 Run the local API:
