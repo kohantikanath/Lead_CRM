@@ -1,0 +1,29 @@
+# dependencies
+node_modules/
+**/node_modules/
+
+# env
+.env
+.env.*
+!.env.example
+!.env.local.example
+
+# next
+.next/
+out/
+
+# builds and caches
+dist/
+build/
+.turbo/
+.vercel/
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# system
+.DS_Store
+Thumbs.db
