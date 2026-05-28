@@ -56,6 +56,18 @@ Lead_CRM/
 - [x] Verified lint/build/live page
 - [x] Committed Task 3 search filters
 
+## Task 4 Checklist
+
+- [x] Created shared lead form component
+- [x] Added `/leads/new` route
+- [x] Added client-side name validation
+- [x] Added client-side email validation
+- [x] Added disabled submit while invalid/submitting
+- [x] Added graceful server error handling
+- [x] Added redirect back to `/leads` after create
+- [x] Verified lint/build/live create flow
+- [x] Committed Task 4 create lead
+
 ## Local Development
 
 Run the local API:
