@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { StatusBadge } from "@/components/leads/status-badge";
+import { StatusTransitionControl } from "@/components/leads/status-transition-control";
 import { ApiError } from "@/lib/api/client";
 import { getLead } from "@/lib/api/leads";
 
@@ -67,6 +68,7 @@ export default async function LeadDetailPage({
             </div>
             <div className="flex flex-wrap items-center gap-3">
               <StatusBadge status={lead.status} />
+              <StatusTransitionControl leadId={lead.id} status={lead.status} />
               <Link
                 href={`/leads/${lead.id}/edit`}
                 className="inline-flex h-10 items-center rounded-md bg-zinc-950 px-4 text-sm font-medium text-white shadow-sm hover:bg-zinc-800"

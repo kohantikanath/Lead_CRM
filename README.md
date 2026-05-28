@@ -88,6 +88,17 @@ Lead_CRM/
 - [x] Verified lint/build/live delete
 - [x] Committed Task 6 delete lead
 
+## Task 7 Checklist
+
+- [x] Added status transition control
+- [x] Shown only valid next statuses
+- [x] Added locked terminal status state
+- [x] Wired `PATCH /leads/:id/status`
+- [x] Added status update loading state
+- [x] Added status update error state
+- [x] Verified lint/build/live transitions
+- [x] Committed Task 7 status transitions
+
 ## Local Development
 
 Run the local API:

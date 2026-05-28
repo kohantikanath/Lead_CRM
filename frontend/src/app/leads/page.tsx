@@ -2,6 +2,7 @@ import Link from "next/link";
 import { LeadFilters } from "@/app/leads/lead-filters";
 import { DeleteLeadButton } from "@/components/leads/delete-lead-button";
 import { StatusBadge } from "@/components/leads/status-badge";
+import { StatusTransitionControl } from "@/components/leads/status-transition-control";
 import { getLeads } from "@/lib/api/leads";
 import { LEAD_STATUSES, type Lead, type LeadStatus } from "@/types/lead";
 
@@ -81,6 +82,9 @@ function LeadsTable({
             <th scope="col" className="border-y border-zinc-200 px-5 py-3">
               Last Updated
             </th>
+            <th scope="col" className="border-y border-zinc-200 px-5 py-3">
+              Pipeline
+            </th>
             <th
               scope="col"
               className="border-y border-zinc-200 px-5 py-3 text-right"
@@ -118,6 +122,13 @@ function LeadsTable({
               </td>
               <td className="border-b border-zinc-100 px-5 py-4 text-sm text-zinc-600">
                 {formatUpdatedAt(lead.updated_at)}
+              </td>
+              <td className="border-b border-zinc-100 px-5 py-4">
+                <StatusTransitionControl
+                  leadId={lead.id}
+                  status={lead.status}
+                  compact
+                />
               </td>
               <td className="border-b border-zinc-100 px-5 py-4">
                 <div className="flex justify-end gap-2">
