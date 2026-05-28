@@ -99,6 +99,17 @@ Lead_CRM/
 - [x] Verified lint/build/live transitions
 - [x] Committed Task 7 status transitions
 
+## Task 8 Checklist
+
+- [x] Reviewed current UI polish gaps
+- [x] Added pipeline summary counts
+- [x] Improved responsive list/action layout
+- [x] Improved filter control sizing
+- [x] Improved edit cancel behavior
+- [x] Added detail page pipeline guidance
+- [x] Verified lint/build/live smoke
+- [x] Committed Task 8 polish pass
+
 ## Local Development
 
 Run the local API:

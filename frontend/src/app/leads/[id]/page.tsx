@@ -89,6 +89,16 @@ export default async function LeadDetailPage({
             <DetailItem label="Created" value={formatDateTime(lead.created_at)} />
             <DetailItem label="Updated" value={formatDateTime(lead.updated_at)} />
           </dl>
+          <div className="mt-6 rounded-lg border border-zinc-200 bg-white px-5 py-4 shadow-sm">
+            <h2 className="text-sm font-semibold text-zinc-950">
+              Pipeline rules
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-zinc-500">
+              Leads move one step at a time through the pipeline, or can be
+              marked lost before conversion. Converted and lost leads are
+              locked.
+            </p>
+          </div>
         </section>
       </div>
     </main>

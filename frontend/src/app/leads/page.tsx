@@ -4,6 +4,7 @@ import { DeleteLeadButton } from "@/components/leads/delete-lead-button";
 import { StatusBadge } from "@/components/leads/status-badge";
 import { StatusTransitionControl } from "@/components/leads/status-transition-control";
 import { getLeads } from "@/lib/api/leads";
+import { STATUS_LABELS } from "@/lib/leads/status";
 import { LEAD_STATUSES, type Lead, type LeadStatus } from "@/types/lead";
 
 export const dynamic = "force-dynamic";
@@ -40,6 +41,13 @@ function parseStatuses(value: string | string[] | undefined) {
     );
 }
 
+function getStatusCounts(leads: Lead[]) {
+  return LEAD_STATUSES.map((status) => ({
+    status,
+    count: leads.filter((lead) => lead.status === status).length,
+  }));
+}
+
 function LeadsTable({
   leads,
   hasFilters,
@@ -64,7 +72,7 @@ function LeadsTable({
 
   return (
     <div className="overflow-x-auto">
-      <table className="min-w-full border-separate border-spacing-0 text-left">
+      <table className="min-w-[1120px] border-separate border-spacing-0 text-left">
         <thead>
           <tr className="text-xs font-semibold uppercase tracking-normal text-zinc-500">
             <th scope="col" className="border-y border-zinc-200 px-5 py-3">
@@ -97,7 +105,7 @@ function LeadsTable({
           {leads.map((lead) => (
             <tr key={lead.id} className="group hover:bg-zinc-50">
               <td className="border-b border-zinc-100 px-5 py-4">
-                <div className="flex min-w-56 items-center gap-3">
+                <div className="flex min-w-60 items-center gap-3">
                   <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-zinc-900 text-xs font-semibold text-white">
                     {getLeadInitials(lead.name)}
                   </span>
@@ -131,7 +139,7 @@ function LeadsTable({
                 />
               </td>
               <td className="border-b border-zinc-100 px-5 py-4">
-                <div className="flex justify-end gap-2">
+                <div className="flex justify-end gap-2 whitespace-nowrap">
                   <Link
                     href={`/leads/${lead.id}`}
                     className="rounded-md border border-zinc-200 px-3 py-1.5 text-xs font-medium text-zinc-700 hover:border-zinc-300 hover:bg-white"
@@ -168,6 +176,7 @@ export default async function LeadsPage({
   const statuses = parseStatuses(params.status);
   const hasFilters = Boolean(query || statuses.length);
   const leads = await getLeads({ q: query, statuses });
+  const statusCounts = getStatusCounts(leads);
 
   return (
     <main className="min-h-screen bg-[#f6f7f9] text-zinc-950">
@@ -178,6 +187,10 @@ export default async function LeadsPage({
             <h1 className="mt-2 text-2xl font-semibold text-zinc-950">
               Leads
             </h1>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-500">
+              Browse prospects, update pipeline progress, and keep contact
+              details current.
+            </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <Link
@@ -188,6 +201,22 @@ export default async function LeadsPage({
             </Link>
           </div>
         </header>
+
+        <section className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          {statusCounts.map(({ status, count }) => (
+            <div
+              key={status}
+              className="rounded-lg border border-zinc-200 bg-white px-4 py-3 shadow-sm"
+            >
+              <p className="text-xs font-medium uppercase tracking-normal text-zinc-500">
+                {STATUS_LABELS[status]}
+              </p>
+              <p className="mt-2 text-2xl font-semibold text-zinc-950">
+                {count}
+              </p>
+            </div>
+          ))}
+        </section>
 
         <section className="mt-6 overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm">
           <div className="flex flex-col gap-4 px-5 py-4 md:flex-row md:items-center md:justify-between">

@@ -50,7 +50,7 @@ export function DeleteLeadButton({ leadId, leadName }: DeleteLeadButtonProps) {
           role="dialog"
           aria-modal="true"
           aria-labelledby={`delete-${leadId}-title`}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/30 px-4"
+          className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-zinc-950/30 px-4 py-6"
         >
           <div className="w-full max-w-md rounded-lg border border-zinc-200 bg-white p-5 shadow-xl">
             <h2

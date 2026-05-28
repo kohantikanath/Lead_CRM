@@ -113,7 +113,8 @@ export function LeadForm({ mode, lead }: LeadFormProps) {
       <div className="border-b border-zinc-200 px-5 py-4">
         <h2 className="text-sm font-semibold text-zinc-950">{title}</h2>
         <p className="mt-1 text-sm text-zinc-500">
-          Leads start as New. Status changes happen from the lead pipeline.
+          Leads start as New. Contact details can be edited here; status changes
+          stay in the pipeline controls.
         </p>
       </div>
 
@@ -188,7 +189,7 @@ export function LeadForm({ mode, lead }: LeadFormProps) {
 
       <div className="flex flex-col-reverse gap-3 border-t border-zinc-200 bg-zinc-50 px-5 py-4 sm:flex-row sm:justify-end">
         <Link
-          href="/leads"
+          href={mode === "edit" && lead ? `/leads/${lead.id}` : "/leads"}
           className="inline-flex h-10 items-center justify-center rounded-md border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-700 shadow-sm hover:border-zinc-300"
         >
           Cancel

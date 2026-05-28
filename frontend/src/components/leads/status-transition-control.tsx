@@ -74,7 +74,7 @@ export function StatusTransitionControl({
             setError("");
           }}
           disabled={isUpdating}
-          className="h-8 rounded-md border border-zinc-200 bg-white px-2 text-xs font-medium text-zinc-700 outline-none transition focus:border-zinc-400 focus:ring-4 focus:ring-zinc-100 disabled:cursor-not-allowed disabled:bg-zinc-50"
+          className="h-8 min-w-28 rounded-md border border-zinc-200 bg-white px-2 text-xs font-medium text-zinc-700 outline-none transition focus:border-zinc-400 focus:ring-4 focus:ring-zinc-100 disabled:cursor-not-allowed disabled:bg-zinc-50"
         >
           <option value="">Move to</option>
           {nextStatuses.map((nextStatus) => (
