@@ -46,6 +46,16 @@ Lead_CRM/
 - [x] Verified lint/build
 - [x] Committed Task 2 main leads page
 
+## Task 3 Checklist
+
+- [x] Added URL-backed search parsing
+- [x] Added status filter parsing
+- [x] Added search control
+- [x] Added status filter controls
+- [x] Added filtered empty state copy
+- [x] Verified lint/build/live page
+- [x] Committed Task 3 search filters
+
 ## Local Development
 
 Run the local API:

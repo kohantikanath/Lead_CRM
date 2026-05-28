@@ -1,7 +1,8 @@
 import Link from "next/link";
+import { LeadFilters } from "@/app/leads/lead-filters";
 import { getLeads } from "@/lib/api/leads";
 import { STATUS_LABELS } from "@/lib/leads/status";
-import type { Lead, LeadStatus } from "@/types/lead";
+import { LEAD_STATUSES, type Lead, type LeadStatus } from "@/types/lead";
 
 export const dynamic = "force-dynamic";
 
@@ -41,14 +42,37 @@ function StatusBadge({ status }: { status: LeadStatus }) {
   );
 }
 
-function LeadsTable({ leads }: { leads: Lead[] }) {
+function parseStatuses(value: string | string[] | undefined) {
+  const raw = Array.isArray(value) ? value.join(",") : value;
+
+  if (!raw) {
+    return [];
+  }
+
+  return raw
+    .split(",")
+    .filter((status): status is LeadStatus =>
+      LEAD_STATUSES.includes(status as LeadStatus),
+    );
+}
+
+function LeadsTable({
+  leads,
+  hasFilters,
+}: {
+  leads: Lead[];
+  hasFilters: boolean;
+}) {
   if (!leads.length) {
     return (
       <div className="flex min-h-72 flex-col items-center justify-center border-t border-zinc-200 px-6 text-center">
-        <p className="text-sm font-medium text-zinc-950">No leads found</p>
+        <p className="text-sm font-medium text-zinc-950">
+          {hasFilters ? "No matching leads found" : "No leads found"}
+        </p>
         <p className="mt-2 max-w-sm text-sm leading-6 text-zinc-500">
-          Once a lead is created, it will appear here with its status, source,
-          and latest update.
+          {hasFilters
+            ? "Try changing the search term or clearing one of the selected statuses."
+            : "Once a lead is created, it will appear here with its status, source, and latest update."}
         </p>
       </div>
     );
@@ -142,8 +166,19 @@ function LeadsTable({ leads }: { leads: Lead[] }) {
   );
 }
 
-export default async function LeadsPage() {
-  const leads = await getLeads();
+export default async function LeadsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{
+    q?: string;
+    status?: string | string[];
+  }>;
+}) {
+  const params = await searchParams;
+  const query = params.q?.trim() ?? "";
+  const statuses = parseStatuses(params.status);
+  const hasFilters = Boolean(query || statuses.length);
+  const leads = await getLeads({ q: query, statuses });
 
   return (
     <main className="min-h-screen bg-[#f6f7f9] text-zinc-950">
@@ -175,23 +210,23 @@ export default async function LeadsPage() {
           <div className="flex flex-col gap-4 px-5 py-4 md:flex-row md:items-center md:justify-between">
             <div>
               <h2 className="text-sm font-semibold text-zinc-950">
-                All leads
+                {hasFilters ? "Filtered leads" : "All leads"}
               </h2>
               <p className="mt-1 text-sm text-zinc-500">
                 {leads.length} records synced from the local API
               </p>
             </div>
-            <label className="relative block w-full md:w-80">
-              <span className="sr-only">Search leads</span>
-              <input
-                type="search"
-                disabled
-                placeholder="Search will be added in Task 3"
-                className="h-10 w-full rounded-md border border-zinc-200 bg-zinc-50 px-3 text-sm text-zinc-500 outline-none"
-              />
-            </label>
+            {hasFilters ? (
+              <Link
+                href="/leads"
+                className="inline-flex h-10 items-center justify-center rounded-md border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-700 shadow-sm hover:border-zinc-300"
+              >
+                Clear Filters
+              </Link>
+            ) : null}
           </div>
-          <LeadsTable leads={leads} />
+          <LeadFilters query={query} statuses={statuses} />
+          <LeadsTable leads={leads} hasFilters={hasFilters} />
         </section>
       </div>
     </main>
