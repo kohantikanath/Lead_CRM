@@ -191,12 +191,6 @@ export default async function LeadsPage({
             </h1>
           </div>
           <div className="flex flex-wrap items-center gap-3">
-            <button
-              type="button"
-              className="h-10 rounded-md border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-700 shadow-sm hover:border-zinc-300"
-            >
-              Filter
-            </button>
             <Link
               href="/leads/new"
               className="inline-flex h-10 items-center rounded-md bg-zinc-950 px-4 text-sm font-medium text-white shadow-sm hover:bg-zinc-800"
@@ -225,7 +219,11 @@ export default async function LeadsPage({
               </Link>
             ) : null}
           </div>
-          <LeadFilters query={query} statuses={statuses} />
+          <LeadFilters
+            key={`${query}:${statuses.join(",")}`}
+            query={query}
+            statuses={statuses}
+          />
           <LeadsTable leads={leads} hasFilters={hasFilters} />
         </section>
       </div>

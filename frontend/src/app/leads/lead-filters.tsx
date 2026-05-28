@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { LEAD_STATUSES, type LeadStatus } from "@/types/lead";
 import { STATUS_LABELS } from "@/lib/leads/status";
@@ -9,16 +10,12 @@ type LeadFiltersProps = {
   statuses: LeadStatus[];
 };
 
-function getNextParams(formData: FormData) {
+function getNextParams(query: string, statuses: LeadStatus[]) {
   const params = new URLSearchParams();
-  const query = String(formData.get("q") ?? "").trim();
-  const statuses = formData
-    .getAll("status")
-    .map(String)
-    .filter(Boolean);
+  const trimmedQuery = query.trim();
 
-  if (query) {
-    params.set("q", query);
+  if (trimmedQuery) {
+    params.set("q", trimmedQuery);
   }
 
   if (statuses.length) {
@@ -30,15 +27,36 @@ function getNextParams(formData: FormData) {
 
 export function LeadFilters({ query, statuses }: LeadFiltersProps) {
   const router = useRouter();
+  const [draftQuery, setDraftQuery] = useState(query);
+  const [draftStatuses, setDraftStatuses] = useState(statuses);
 
-  function handleSubmit(formData: FormData) {
-    const queryString = getNextParams(formData);
+  function applyFilters(nextQuery = draftQuery, nextStatuses = draftStatuses) {
+    const queryString = getNextParams(nextQuery, nextStatuses);
     router.push(queryString ? `/leads?${queryString}` : "/leads");
+  }
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    applyFilters();
+  }
+
+  function handleStatusChange(status: LeadStatus, checked: boolean) {
+    setDraftStatuses((current) =>
+      checked
+        ? [...current, status]
+        : current.filter((currentStatus) => currentStatus !== status),
+    );
+  }
+
+  function clearFilters() {
+    setDraftQuery("");
+    setDraftStatuses([]);
+    router.push("/leads");
   }
 
   return (
     <form
-      action={handleSubmit}
+      onSubmit={handleSubmit}
       className="flex flex-col gap-4 border-t border-zinc-100 px-5 py-4"
     >
       <div className="grid gap-3 lg:grid-cols-[minmax(220px,360px)_1fr_auto] lg:items-end">
@@ -49,7 +67,8 @@ export function LeadFilters({ query, statuses }: LeadFiltersProps) {
           <input
             type="search"
             name="q"
-            defaultValue={query}
+            value={draftQuery}
+            onChange={(event) => setDraftQuery(event.target.value)}
             placeholder="Search by name or email"
             className="mt-1 h-10 w-full rounded-md border border-zinc-200 bg-white px-3 text-sm text-zinc-950 outline-none transition focus:border-zinc-400 focus:ring-4 focus:ring-zinc-100"
           />
@@ -69,7 +88,10 @@ export function LeadFilters({ query, statuses }: LeadFiltersProps) {
                   type="checkbox"
                   name="status"
                   value={status}
-                  defaultChecked={statuses.includes(status)}
+                  checked={draftStatuses.includes(status)}
+                  onChange={(event) =>
+                    handleStatusChange(status, event.target.checked)
+                  }
                   className="h-4 w-4 rounded border-zinc-300 accent-zinc-950"
                 />
                 {STATUS_LABELS[status]}
@@ -87,7 +109,7 @@ export function LeadFilters({ query, statuses }: LeadFiltersProps) {
           </button>
           <button
             type="button"
-            onClick={() => router.push("/leads")}
+            onClick={clearFilters}
             className="h-10 rounded-md border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-700 shadow-sm hover:border-zinc-300"
           >
             Clear
