@@ -1,6 +1,6 @@
 # Lead CRM
 
-Mini Lead CRM for the Superleap frontend intern assessment.
+Mini Lead CRM for the Superleap frontend intern assessment. The app implements the required Level 1 flows: browse, search, filter, create, view, edit, delete, and move leads through valid pipeline states.
 
 ## Project Structure
 
@@ -11,108 +11,19 @@ Lead_CRM/
     api/                 # Provided Express API for local assessment data
 ```
 
-## Task 0 Checklist
+## Tech Stack
 
-- [x] Clone empty GitHub repository
-- [x] Create separate `frontend` and `backend` folders
-- [x] Add provided API server under `backend/api`
-- [x] Scaffold Next.js TypeScript Tailwind frontend
-- [x] Add environment example
-- [x] Confirm frontend and backend run locally
-- [x] Commit Task 0 setup
+**Frontend:** Next.js App Router with TypeScript. I chose Next.js because the assessment allows React/Next.js, and App Router gives clean deep-linkable routes for `/leads`, `/leads/new`, `/leads/[id]`, and `/leads/[id]/edit`.
 
-## Task 1 Checklist
+**Styling:** Tailwind CSS. It keeps the UI implementation lightweight and makes it easy to tune spacing, table density, focus states, and responsive behavior without adding a heavy component library.
 
-- [x] Rename backend folder to `backend/api`
-- [x] Create `Lead` TypeScript model
-- [x] Create lead status constants
-- [x] Create API client error handling
-- [x] Add lead API functions
-- [x] Add status transition helpers
-- [x] Verify lint/build health
-- [x] Commit Task 1 API layer
+**State:** No global state library. Server data is fetched through a small API layer, URL state is used for search/filter, and local component state is used for forms, confirmation dialogs, and async button states.
 
-## Task 2 Checklist
+**API:** Provided Express mock API under `backend/api`. The frontend integrates with it through `NEXT_PUBLIC_API_URL`, so the UI exercises real HTTP loading, mutation, error, and refresh behavior.
 
-- [x] Created `/leads` route
-- [x] Added real API data loading
-- [x] Added semantic leads table
-- [x] Added name, email, status, source, updated time columns
-- [x] Added status badges
-- [x] Added loading state
-- [x] Added empty state
-- [x] Added error state
-- [x] Added View, Edit, Delete row actions
-- [x] Verified lint/build
-- [x] Committed Task 2 main leads page
+## Local Setup
 
-## Task 3 Checklist
-
-- [x] Added URL-backed search parsing
-- [x] Added status filter parsing
-- [x] Added search control
-- [x] Added status filter controls
-- [x] Added filtered empty state copy
-- [x] Verified lint/build/live page
-- [x] Committed Task 3 search filters
-
-## Task 4 Checklist
-
-- [x] Created shared lead form component
-- [x] Added `/leads/new` route
-- [x] Added client-side name validation
-- [x] Added client-side email validation
-- [x] Added disabled submit while invalid/submitting
-- [x] Added graceful server error handling
-- [x] Added redirect back to `/leads` after create
-- [x] Verified lint/build/live create flow
-- [x] Committed Task 4 create lead
-
-## Task 5 Checklist
-
-- [x] Added `/leads/[id]` detail route
-- [x] Added `/leads/[id]/edit` route
-- [x] Reused shared lead form for editing
-- [x] Added missing lead state
-- [x] Added detail loading/error states
-- [x] Verified lint/build/live detail edit
-- [x] Committed Task 5 view edit lead
-
-## Task 6 Checklist
-
-- [x] Added reusable delete confirmation component
-- [x] Wired delete action into leads table
-- [x] Added delete loading state
-- [x] Added delete error state
-- [x] Added list refresh after delete
-- [x] Verified lint/build/live delete
-- [x] Committed Task 6 delete lead
-
-## Task 7 Checklist
-
-- [x] Added status transition control
-- [x] Shown only valid next statuses
-- [x] Added locked terminal status state
-- [x] Wired `PATCH /leads/:id/status`
-- [x] Added status update loading state
-- [x] Added status update error state
-- [x] Verified lint/build/live transitions
-- [x] Committed Task 7 status transitions
-
-## Task 8 Checklist
-
-- [x] Reviewed current UI polish gaps
-- [x] Added pipeline summary counts
-- [x] Improved responsive list/action layout
-- [x] Improved filter control sizing
-- [x] Improved edit cancel behavior
-- [x] Added detail page pipeline guidance
-- [x] Verified lint/build/live smoke
-- [x] Committed Task 8 polish pass
-
-## Local Development
-
-Run the local API:
+Install and run the API:
 
 ```bash
 cd backend/api
@@ -122,7 +33,7 @@ npm start
 
 The API runs at `http://localhost:4000`.
 
-Run the frontend:
+Install and run the frontend in a second terminal:
 
 ```bash
 cd frontend
@@ -131,3 +42,111 @@ npm run dev
 ```
 
 The frontend runs at `http://localhost:3000`.
+
+Create this file if it does not already exist:
+
+```bash
+cd frontend
+cp .env.local.example .env.local
+```
+
+Expected value:
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:4000
+```
+
+## Useful Commands
+
+Frontend:
+
+```bash
+cd frontend
+npm run lint
+npm run build
+```
+
+Backend syntax check:
+
+```bash
+cd backend/api
+node --check server.js
+```
+
+## Features
+
+- Lead list with semantic table markup
+- Search by name/email using URL query state
+- Status filters using URL query state
+- Create lead form with inline validation
+- Detail and edit pages with refresh-safe deep links
+- Delete flow with confirmation and loading/error states
+- Status transition control that only shows valid next statuses
+- Locked UI for terminal statuses: `CONVERTED` and `LOST`
+- Loading, empty, error, and not-found states
+- Pipeline summary counts and responsive table behavior
+
+## Status Rules
+
+The UI uses the same state machine as the API:
+
+```txt
+NEW -> CONTACTED -> QUALIFIED -> CONVERTED
+NEW -> LOST
+CONTACTED -> LOST
+QUALIFIED -> LOST
+CONVERTED -> locked
+LOST -> locked
+```
+
+Invalid transitions are not offered in the UI. For example, a `NEW` lead can only move to `CONTACTED` or `LOST`; `CONVERTED` and `LOST` leads show a locked state instead of a status menu.
+
+## Design Decisions
+
+Components are split by responsibility: route pages handle data fetching and page layout, `lib/api` owns HTTP behavior, `lib/leads/status.ts` owns pipeline rules, and reusable lead UI lives in `components/leads`.
+
+Async behavior is explicit. Forms disable submit while invalid or saving, delete uses a confirmation dialog, status changes show saving/error feedback, and pages include loading/error states for API failures.
+
+URL state is used for list search and filters so filtered views are shareable and survive refreshes, for example:
+
+```txt
+/leads?q=aman&status=NEW
+```
+
+## What I Would Improve With More Time
+
+- Add Level 2 Kanban board with drag-and-drop status transitions.
+- Add Level 3 bulk actions and virtualization for large datasets.
+- Add optimistic status/delete updates with rollback for an even faster feel.
+- Add automated browser tests for create/edit/delete/status flows.
+- Improve concurrent edit handling with updated timestamps or conflict messaging.
+
+For offline support, I would add a local mutation queue, cache recent lead data, and reconcile changes when the API becomes available again.
+
+## AI Usage Note
+
+I used AI assistance to break the assessment into tasks, scaffold the project structure, and iterate on implementation details. I reviewed and adjusted the code as it was added, kept commits task-sized, and verified behavior with lint, production builds, and live local API checks.
+
+## Submission Recording Checklist
+
+- Show `/leads` loading data from the local API
+- Search and filter leads, then clear filters
+- Create a new lead
+- Open a lead detail page
+- Edit lead contact details
+- Change a valid status
+- Show a terminal lead as locked
+- Delete a lead with confirmation
+
+## Completed Task Checklist
+
+- [x] Task 0: Project setup
+- [x] Task 1: Data model and API layer
+- [x] Task 2: Main leads page
+- [x] Task 3: Search and filters
+- [x] Task 4: Create lead
+- [x] Task 5: View and edit lead
+- [x] Task 6: Delete lead
+- [x] Task 7: Status transitions
+- [x] Task 8: Polish pass
+- [x] Task 9: README and submission prep
