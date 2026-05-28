@@ -32,6 +32,20 @@ Lead_CRM/
 - [x] Verify lint/build health
 - [x] Commit Task 1 API layer
 
+## Task 2 Checklist
+
+- [x] Created `/leads` route
+- [x] Added real API data loading
+- [x] Added semantic leads table
+- [x] Added name, email, status, source, updated time columns
+- [x] Added status badges
+- [x] Added loading state
+- [x] Added empty state
+- [x] Added error state
+- [x] Added View, Edit, Delete row actions
+- [x] Verified lint/build
+- [x] Committed Task 2 main leads page
+
 ## Local Development
 
 Run the local API:
