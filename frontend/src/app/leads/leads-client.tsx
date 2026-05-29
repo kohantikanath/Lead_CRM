@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { LeadFilters } from "@/app/leads/lead-filters";
 import { DeleteLeadButton } from "@/components/leads/delete-lead-button";
+import { LeadEditModal } from "@/components/leads/lead-edit-modal";
+import { LeadViewModal } from "@/components/leads/lead-view-modal";
 import { StatusBadge } from "@/components/leads/status-badge";
 import { StatusTransitionControl } from "@/components/leads/status-transition-control";
 import { useLeads } from "@/lib/api/lead-hooks";
@@ -14,6 +16,13 @@ type LeadsClientProps = {
   initialLeads: Lead[];
   query: string;
   statuses: LeadStatus[];
+  activeModal?: ActiveLeadModal;
+};
+
+export type ActiveLeadModal = {
+  id: string;
+  mode: "view" | "edit";
+  initialLead?: Lead;
 };
 
 function formatUpdatedAt(value: string) {
@@ -156,7 +165,12 @@ function LeadsTable({
   );
 }
 
-export function LeadsClient({ initialLeads, query, statuses }: LeadsClientProps) {
+export function LeadsClient({
+  activeModal,
+  initialLeads,
+  query,
+  statuses,
+}: LeadsClientProps) {
   const params: LeadListParams = { q: query, statuses };
   const { data, isError, isFetching } = useLeads(params, initialLeads);
   const leads = data ?? [];
@@ -164,8 +178,9 @@ export function LeadsClient({ initialLeads, query, statuses }: LeadsClientProps)
   const statusCounts = getStatusCounts(leads);
 
   return (
-    <main className="min-h-screen bg-[#f6f7f9] text-zinc-950">
-      <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 py-6 sm:px-6 lg:px-8">
+    <>
+      <main className="min-h-screen bg-[#f6f7f9] text-zinc-950">
+        <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 py-6 sm:px-6 lg:px-8">
         <header className="flex flex-col gap-5 border-b border-zinc-200 pb-6 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="text-sm font-medium text-zinc-500">Lead pipeline</p>
@@ -235,7 +250,20 @@ export function LeadsClient({ initialLeads, query, statuses }: LeadsClientProps)
           />
           <LeadsTable leads={leads} hasFilters={hasFilters} />
         </section>
-      </div>
-    </main>
+        </div>
+      </main>
+      {activeModal?.mode === "view" ? (
+        <LeadViewModal
+          initialLead={activeModal.initialLead}
+          leadId={activeModal.id}
+        />
+      ) : null}
+      {activeModal?.mode === "edit" ? (
+        <LeadEditModal
+          initialLead={activeModal.initialLead}
+          leadId={activeModal.id}
+        />
+      ) : null}
+    </>
   );
 }

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useMemo, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { ApiError } from "@/lib/api/client";
-import { createLead, updateLead } from "@/lib/api/leads";
+import { useCreateLead, useUpdateLead } from "@/lib/api/lead-hooks";
 import type { Lead, LeadCreateInput } from "@/types/lead";
 
 type LeadFormMode = "create" | "edit";
@@ -19,6 +19,9 @@ type LeadFormValues = {
 type LeadFormProps = {
   mode: LeadFormMode;
   lead?: Lead;
+  embedded?: boolean;
+  onCancel?: () => void;
+  onSuccess?: (lead: Lead) => void;
 };
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -41,11 +44,19 @@ function toPayload(values: LeadFormValues): LeadCreateInput {
   };
 }
 
-export function LeadForm({ mode, lead }: LeadFormProps) {
+export function LeadForm({
+  mode,
+  lead,
+  embedded = false,
+  onCancel,
+  onSuccess,
+}: LeadFormProps) {
   const router = useRouter();
+  const createLead = useCreateLead();
+  const updateLead = useUpdateLead();
   const [values, setValues] = useState(() => getInitialValues(lead));
   const [serverError, setServerError] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const isSubmitting = createLead.isPending || updateLead.isPending;
 
   const errors = useMemo(() => {
     const nextErrors: Partial<Record<keyof LeadFormValues, string>> = {};
@@ -79,44 +90,56 @@ export function LeadForm({ mode, lead }: LeadFormProps) {
       return;
     }
 
-    setIsSubmitting(true);
     setServerError("");
 
     try {
       const payload = toPayload(values);
+      let savedLead: Lead | undefined;
 
       if (mode === "create") {
-        await createLead(payload);
+        savedLead = await createLead.mutateAsync(payload);
       } else if (lead) {
-        await updateLead(lead.id, payload);
+        savedLead = await updateLead.mutateAsync({
+          id: lead.id,
+          input: payload,
+        });
       }
 
-      router.push(mode === "edit" && lead ? `/leads/${lead.id}` : "/leads");
-      router.refresh();
+      if (savedLead && onSuccess) {
+        onSuccess(savedLead);
+      } else {
+        router.push(
+          mode === "edit" && savedLead ? `/leads/${savedLead.id}` : "/leads",
+        );
+      }
     } catch (error) {
       setServerError(
         error instanceof ApiError
           ? error.message
           : "The lead could not be saved. Please try again.",
       );
-    } finally {
-      setIsSubmitting(false);
     }
   }
 
   return (
     <form
       onSubmit={handleSubmit}
-      className="overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm"
+      className={
+        embedded
+          ? "overflow-hidden"
+          : "overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm"
+      }
       noValidate
     >
-      <div className="border-b border-zinc-200 px-5 py-4">
-        <h2 className="text-sm font-semibold text-zinc-950">{title}</h2>
-        <p className="mt-1 text-sm text-zinc-500">
-          Leads start as New. Contact details can be edited here; status changes
-          stay in the pipeline controls.
-        </p>
-      </div>
+      {embedded ? null : (
+        <div className="border-b border-zinc-200 px-5 py-4">
+          <h2 className="text-sm font-semibold text-zinc-950">{title}</h2>
+          <p className="mt-1 text-sm text-zinc-500">
+            Leads start as New. Contact details can be edited here; status
+            changes stay in the pipeline controls.
+          </p>
+        </div>
+      )}
 
       {serverError ? (
         <div className="border-b border-rose-100 bg-rose-50 px-5 py-3 text-sm text-rose-700">
@@ -124,7 +147,13 @@ export function LeadForm({ mode, lead }: LeadFormProps) {
         </div>
       ) : null}
 
-      <div className="grid gap-5 px-5 py-5 md:grid-cols-2">
+      <div
+        className={
+          embedded
+            ? "grid gap-5 md:grid-cols-2"
+            : "grid gap-5 px-5 py-5 md:grid-cols-2"
+        }
+      >
         <label className="block">
           <span className="text-sm font-medium text-zinc-700">Name</span>
           <input
@@ -188,12 +217,22 @@ export function LeadForm({ mode, lead }: LeadFormProps) {
       </div>
 
       <div className="flex flex-col-reverse gap-3 border-t border-zinc-200 bg-zinc-50 px-5 py-4 sm:flex-row sm:justify-end">
-        <Link
-          href={mode === "edit" && lead ? `/leads/${lead.id}` : "/leads"}
-          className="inline-flex h-10 items-center justify-center rounded-md border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-700 shadow-sm hover:border-zinc-300"
-        >
-          Cancel
-        </Link>
+        {onCancel ? (
+          <button
+            type="button"
+            onClick={onCancel}
+            className="inline-flex h-10 items-center justify-center rounded-md border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-700 shadow-sm hover:border-zinc-300"
+          >
+            Cancel
+          </button>
+        ) : (
+          <Link
+            href={mode === "edit" && lead ? `/leads/${lead.id}` : "/leads"}
+            className="inline-flex h-10 items-center justify-center rounded-md border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-700 shadow-sm hover:border-zinc-300"
+          >
+            Cancel
+          </Link>
+        )}
         <button
           type="submit"
           disabled={isInvalid || isSubmitting}
