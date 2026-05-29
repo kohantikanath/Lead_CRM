@@ -207,7 +207,7 @@ export function LeadsClient({
         </section>
 
         <section className="mt-6 overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm">
-          <div className="flex flex-col gap-4 px-5 py-4 md:flex-row md:items-center md:justify-between">
+          <div className="px-5 py-4">
             <div>
               <h2 className="text-sm font-semibold text-zinc-950">
                 {hasFilters ? "Filtered leads" : "All leads"}
@@ -217,14 +217,6 @@ export function LeadsClient({
                 {isFetching ? "..." : ""}
               </p>
             </div>
-            {hasFilters ? (
-              <Link
-                href="/leads"
-                className="inline-flex h-10 items-center justify-center rounded-md border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-700 shadow-sm hover:border-zinc-300"
-              >
-                Clear Filters
-              </Link>
-            ) : null}
           </div>
           {isError ? (
             <div className="border-t border-rose-100 bg-rose-50 px-5 py-3 text-sm text-rose-700">
