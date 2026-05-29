@@ -1,9 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { ApiError } from "@/lib/api/client";
-import { updateLeadStatus } from "@/lib/api/leads";
+import { useUpdateLeadStatus } from "@/lib/api/lead-hooks";
 import {
   getNextStatuses,
   isTerminalStatus,
@@ -22,33 +21,32 @@ export function StatusTransitionControl({
   status,
   compact = false,
 }: StatusTransitionControlProps) {
-  const router = useRouter();
+  const updateLeadStatus = useUpdateLeadStatus();
   const [selectedStatus, setSelectedStatus] = useState("");
-  const [isUpdating, setIsUpdating] = useState(false);
   const [error, setError] = useState("");
   const nextStatuses = getNextStatuses(status);
   const isLocked = isTerminalStatus(status);
+  const isUpdating = updateLeadStatus.isPending;
 
   async function handleUpdate() {
     if (!selectedStatus) {
       return;
     }
 
-    setIsUpdating(true);
     setError("");
 
     try {
-      await updateLeadStatus(leadId, selectedStatus as LeadStatus);
+      await updateLeadStatus.mutateAsync({
+        id: leadId,
+        status: selectedStatus as LeadStatus,
+      });
       setSelectedStatus("");
-      router.refresh();
     } catch (updateError) {
       setError(
         updateError instanceof ApiError
           ? updateError.message
           : "The status could not be updated. Please try again.",
       );
-    } finally {
-      setIsUpdating(false);
     }
   }
 
