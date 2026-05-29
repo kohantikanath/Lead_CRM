@@ -1,12 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { LeadFilters } from "@/app/leads/lead-filters";
-import { DeleteLeadButton } from "@/components/leads/delete-lead-button";
+import { LeadActions } from "@/components/leads/lead-actions";
 import { LeadEditModal } from "@/components/leads/lead-edit-modal";
 import { LeadViewModal } from "@/components/leads/lead-view-modal";
 import { StatusBadge } from "@/components/leads/status-badge";
-import { StatusTransitionControl } from "@/components/leads/status-transition-control";
 import { useLeads } from "@/lib/api/lead-hooks";
 import type { LeadListParams } from "@/lib/api/leads";
 import { STATUS_LABELS } from "@/lib/leads/status";
@@ -57,6 +57,8 @@ function LeadsTable({
   leads: Lead[];
   hasFilters: boolean;
 }) {
+  const router = useRouter();
+
   if (!leads.length) {
     return (
       <div className="flex min-h-72 flex-col items-center justify-center border-t border-zinc-200 px-6 text-center">
@@ -74,7 +76,7 @@ function LeadsTable({
 
   return (
     <div className="overflow-x-auto">
-      <table className="min-w-[1120px] border-separate border-spacing-0 text-left">
+      <table className="min-w-[960px] border-separate border-spacing-0 text-left">
         <thead>
           <tr className="text-xs font-semibold uppercase tracking-normal text-zinc-500">
             <th scope="col" className="border-y border-zinc-200 px-5 py-3">
@@ -92,9 +94,6 @@ function LeadsTable({
             <th scope="col" className="border-y border-zinc-200 px-5 py-3">
               Last Updated
             </th>
-            <th scope="col" className="border-y border-zinc-200 px-5 py-3">
-              Pipeline
-            </th>
             <th
               scope="col"
               className="border-y border-zinc-200 px-5 py-3 text-right"
@@ -105,7 +104,17 @@ function LeadsTable({
         </thead>
         <tbody>
           {leads.map((lead) => (
-            <tr key={lead.id} className="group hover:bg-zinc-50">
+            <tr
+              key={lead.id}
+              tabIndex={0}
+              onClick={() => router.push(`/leads/${lead.id}`)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  router.push(`/leads/${lead.id}`);
+                }
+              }}
+              className="group cursor-pointer hover:bg-zinc-50 focus:bg-zinc-50 focus:outline-none"
+            >
               <td className="border-b border-zinc-100 px-5 py-4">
                 <div className="flex min-w-60 items-center gap-3">
                   <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-zinc-900 text-xs font-semibold text-white">
@@ -134,28 +143,7 @@ function LeadsTable({
                 {formatUpdatedAt(lead.updated_at)}
               </td>
               <td className="border-b border-zinc-100 px-5 py-4">
-                <StatusTransitionControl
-                  leadId={lead.id}
-                  status={lead.status}
-                  compact
-                />
-              </td>
-              <td className="border-b border-zinc-100 px-5 py-4">
-                <div className="flex justify-end gap-2 whitespace-nowrap">
-                  <Link
-                    href={`/leads/${lead.id}`}
-                    className="rounded-md border border-zinc-200 px-3 py-1.5 text-xs font-medium text-zinc-700 hover:border-zinc-300 hover:bg-white"
-                  >
-                    View
-                  </Link>
-                  <Link
-                    href={`/leads/${lead.id}/edit`}
-                    className="rounded-md border border-zinc-200 px-3 py-1.5 text-xs font-medium text-zinc-700 hover:border-zinc-300 hover:bg-white"
-                  >
-                    Edit
-                  </Link>
-                  <DeleteLeadButton leadId={lead.id} leadName={lead.name} />
-                </div>
+                <LeadActions lead={lead} />
               </td>
             </tr>
           ))}
