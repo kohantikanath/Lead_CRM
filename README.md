@@ -25,7 +25,7 @@ Lead_CRM/
 
 ## Demo
 
-[Watch the 1-3 minute walkthrough](ADD_LOOM_LINK_HERE)
+[Watch the 3-4 minute walkthrough](Demo-Video.mp4)
 
 ## Tech Stack
 
