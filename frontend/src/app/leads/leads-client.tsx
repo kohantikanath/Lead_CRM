@@ -190,27 +190,40 @@ export function LeadsClient({
   function setView(nextView: LeadView) {
     const searchParams = new URLSearchParams(window.location.search);
 
-    if (nextView === "kanban") {
-      searchParams.set("view", nextView);
+    searchParams.delete("view");
+
+    const queryString = searchParams.toString();
+    const pathname = nextView === "kanban" ? "/board" : "/leads";
+    router.push(queryString ? `${pathname}?${queryString}` : pathname);
+  }
+
+  function getListUrl() {
+    const searchParams = new URLSearchParams(window.location.search);
+    searchParams.delete("view");
+    const queryString = searchParams.toString();
+    const pathname = view === "kanban" ? "/board" : "/leads";
+
+    return queryString ? `${pathname}?${queryString}` : pathname;
+  }
+
+  function getModalUrl(modal: ActiveLeadModal) {
+    const searchParams = new URLSearchParams(window.location.search);
+
+    if (view === "kanban") {
+      searchParams.set("view", view);
     } else {
       searchParams.delete("view");
     }
 
     const queryString = searchParams.toString();
-    router.push(queryString ? `/leads?${queryString}` : "/leads");
-  }
+    const search = queryString ? `?${queryString}` : "";
 
-  function getListUrl() {
-    return `/leads${window.location.search}`;
-  }
-
-  function getModalUrl(modal: ActiveLeadModal) {
     if (modal.mode === "new") {
-      return `/leads/new${window.location.search}`;
+      return `/leads/new${search}`;
     }
 
     const suffix = modal.mode === "edit" ? "/edit" : "";
-    return `/leads/${modal.id}${suffix}${window.location.search}`;
+    return `/leads/${modal.id}${suffix}${search}`;
   }
 
   function openModal(modal: ActiveLeadModal, replace = false) {
@@ -331,7 +344,6 @@ export function LeadsClient({
             </div>
           ) : null}
           <LeadFilters
-            key={`${query}:${statuses.join(",")}`}
             query={query}
             statuses={statuses}
             view={view}

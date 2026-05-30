@@ -103,7 +103,7 @@ LOST -> locked
 
 Invalid transitions are not offered in the UI. For example, a `NEW` lead can only move to `CONTACTED` or `LOST`; `CONVERTED` and `LOST` leads show a locked state instead of a status menu.
 
-The Kanban board makes the same rules visible while dragging. Valid destination columns are highlighted, invalid columns are muted and disabled, and terminal leads do not expose drag handles. A valid drop stages the card in its new column with compact Confirm and Cancel controls. The API request is sent only after confirmation because valid status transitions intentionally cannot be reversed.
+The Kanban board makes the same rules visible while dragging. Valid destination columns are highlighted, invalid columns are muted, and terminal leads stay locked. A valid drop moves the card immediately while the API request runs. If the API rejects the update, the card returns to its original column and the board shows an error message. Invalid drops also snap back with feedback and do not send an API request.
 
 ## Design Decisions
 
@@ -114,10 +114,10 @@ Async behavior is explicit. Forms disable submit while invalid or saving, delete
 URL state is used for view selection, search, and filters so filtered views are shareable and survive refreshes, for example:
 
 ```txt
-/leads?view=kanban&q=aman&status=NEW
+/board?q=aman&status=NEW
 ```
 
-Kanban drag-and-drop uses `@dnd-kit/react`. The board reuses the same centralized transition rules as the list actions and the API, stages one move at a time, and keeps invalid drop targets disabled before a request can be sent.
+Kanban drag-and-drop uses `@dnd-kit/react`. The board reuses the same centralized transition rules as the list actions and the API, processes one move at a time, and keeps invalid transitions API-free. Each column has its own scroll area so the board stays readable with larger lead volumes.
 
 ## What I Would Improve With More Time
 
@@ -144,7 +144,7 @@ I used AI assistance to break the assessment into tasks, scaffold the project st
 - Delete a lead with confirmation
 - Switch between List and Kanban views
 - Drag an active lead and show invalid columns becoming disabled
-- Stage, cancel, and confirm a valid Kanban status move
+- Confirm valid Kanban moves update immediately and failed moves roll back
 
 ## Completed Task Checklist
 
@@ -160,5 +160,5 @@ I used AI assistance to break the assessment into tasks, scaffold the project st
 - [x] Task 9: README and submission prep
 - [x] Level 2 Task 1: List and Kanban view toggle
 - [x] Level 2 Task 2: Responsive Kanban board
-- [x] Level 2 Task 3: Rule-aware staged drag-and-drop
+- [x] Level 2 Task 3: Rule-aware optimistic drag-and-drop
 - [x] Level 2 Task 4: Documentation and regression pass

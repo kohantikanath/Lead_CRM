@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   DragDropProvider,
   DragOverlay,
@@ -14,6 +14,7 @@ import { ApiError } from "@/lib/api/client";
 import { useUpdateLeadStatus } from "@/lib/api/lead-hooks";
 import {
   canTransitionStatus,
+  getNextStatuses,
   isTerminalStatus,
   STATUS_LABELS,
 } from "@/lib/leads/status";
@@ -25,21 +26,15 @@ type LeadsKanbanBoardProps = {
   onViewLead: (lead: Lead) => void;
 };
 
-type StagedMove = {
+type PendingMove = {
   leadId: string;
-  sourceStatus: LeadStatus;
   targetStatus: LeadStatus;
-  error: string;
 };
 
 type KanbanCardProps = {
   lead: Lead;
   isDragDisabled?: boolean;
-  isStaged?: boolean;
-  stagedError?: string;
-  isSaving?: boolean;
-  onCancelStage?: () => void;
-  onConfirmStage?: () => void;
+  isUpdating?: boolean;
   onEdit: () => void;
   onView: () => void;
 };
@@ -81,11 +76,7 @@ function getLeadInitials(name: string) {
 function LeadKanbanCard({
   lead,
   isDragDisabled = false,
-  isStaged = false,
-  stagedError,
-  isSaving = false,
-  onCancelStage,
-  onConfirmStage,
+  isUpdating = false,
   onEdit,
   onView,
 }: KanbanCardProps) {
@@ -93,7 +84,7 @@ function LeadKanbanCard({
   const { ref, isDragging } = useDraggable({
     id: lead.id,
     data: lead,
-    disabled: isLocked || isStaged || isDragDisabled,
+    disabled: isLocked || isDragDisabled,
   });
 
   function handleDoubleClick(event: React.MouseEvent<HTMLElement>) {
@@ -121,11 +112,11 @@ function LeadKanbanCard({
         }
       }}
       className={`rounded-md border bg-white p-3 shadow-sm transition focus:outline-none focus:ring-4 focus:ring-zinc-100 ${
-        isStaged
+        isUpdating
           ? "border-zinc-400 shadow"
           : "border-zinc-200 hover:border-zinc-300 hover:shadow focus:border-zinc-400"
       } ${
-        !isLocked && !isDragDisabled && !isStaged
+        !isLocked && !isDragDisabled
           ? "cursor-grab active:cursor-grabbing"
           : "cursor-pointer"
       } ${isDragging ? "opacity-30" : ""}`}
@@ -145,14 +136,12 @@ function LeadKanbanCard({
           </div>
         </div>
         <div className="flex items-center gap-1">
-          {!isStaged ? (
-            <LeadActions
-              lead={lead}
-              onEdit={onEdit}
-              onView={onView}
-              variant="compact"
-            />
-          ) : null}
+          <LeadActions
+            lead={lead}
+            onEdit={onEdit}
+            onView={onView}
+            variant="compact"
+          />
         </div>
       </div>
 
@@ -171,37 +160,9 @@ function LeadKanbanCard({
         </div>
       </dl>
 
-      {isStaged ? (
-        <div
-          className="mt-3 border-t border-zinc-100 pt-3"
-          onClick={(event) => event.stopPropagation()}
-        >
-          <p className="text-xs font-medium text-zinc-700">
-            Move to {STATUS_LABELS[lead.status]}?
-          </p>
-          {stagedError ? (
-            <p className="mt-2 rounded-md bg-rose-50 px-2 py-1.5 text-xs leading-5 text-rose-700">
-              {stagedError}
-            </p>
-          ) : null}
-          <div className="mt-3 flex gap-2">
-            <button
-              type="button"
-              disabled={isSaving}
-              onClick={onCancelStage}
-              className="h-8 flex-1 rounded-md border border-zinc-200 bg-white px-2 text-xs font-medium text-zinc-700 shadow-sm hover:border-zinc-300 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              disabled={isSaving}
-              onClick={onConfirmStage}
-              className="h-8 flex-1 rounded-md bg-zinc-950 px-2 text-xs font-medium text-white shadow-sm hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-300"
-            >
-              {isSaving ? "Working..." : stagedError ? "Retry" : "Confirm"}
-            </button>
-          </div>
+      {isUpdating ? (
+        <div className="mt-3 border-t border-zinc-100 pt-3">
+          <p className="text-xs font-medium text-zinc-500">Updating status...</p>
         </div>
       ) : null}
     </article>
@@ -228,26 +189,20 @@ function LeadKanbanOverlay({ lead }: { lead: Lead }) {
 
 function LeadKanbanColumn({
   activeLead,
-  isStagePending,
+  isMovePending,
   leads,
-  onCancelStage,
-  onConfirmStage,
   onEditLead,
   onViewLead,
-  stagedMove,
+  pendingMove,
   status,
-  isSaving,
 }: {
   activeLead?: Lead;
-  isStagePending: boolean;
+  isMovePending: boolean;
   leads: Lead[];
-  onCancelStage: () => void;
-  onConfirmStage: () => void;
   onEditLead: (lead: Lead) => void;
   onViewLead: (lead: Lead) => void;
-  stagedMove?: StagedMove;
+  pendingMove?: PendingMove;
   status: LeadStatus;
-  isSaving: boolean;
 }) {
   const isSource = activeLead?.status === status;
   const isValidTarget = activeLead
@@ -258,7 +213,7 @@ function LeadKanbanColumn({
   );
   const { ref, isDropTarget } = useDroppable({
     id: status,
-    disabled: isDisabledDuringDrag || isStagePending,
+    disabled: isMovePending,
   });
 
   const dragStateClassName = isValidTarget
@@ -275,7 +230,7 @@ function LeadKanbanColumn({
       aria-disabled={isDisabledDuringDrag || undefined}
       aria-labelledby={`kanban-${status.toLowerCase()}`}
       role="group"
-      className={`min-h-[28rem] rounded-lg border p-3 transition ${columnStyles[status]} ${dragStateClassName} ${
+      className={`flex h-[42rem] flex-col rounded-lg border p-3 transition ${columnStyles[status]} ${dragStateClassName} ${
         isDropTarget ? "ring-4 ring-zinc-300" : ""
       }`}
     >
@@ -297,21 +252,17 @@ function LeadKanbanColumn({
         </span>
       </div>
 
-      <div className="mt-3 space-y-3">
+      <div className="mt-3 min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
         {leads.length ? (
           leads.map((lead) => {
-            const isStaged = stagedMove?.leadId === lead.id;
+            const isUpdating = pendingMove?.leadId === lead.id;
 
             return (
               <LeadKanbanCard
                 key={lead.id}
                 lead={lead}
-                isDragDisabled={isStagePending}
-                isSaving={isSaving}
-                isStaged={isStaged}
-                stagedError={isStaged ? stagedMove.error : undefined}
-                onCancelStage={isStaged ? onCancelStage : undefined}
-                onConfirmStage={isStaged ? onConfirmStage : undefined}
+                isDragDisabled={isMovePending}
+                isUpdating={isUpdating}
                 onEdit={() => onEditLead(lead)}
                 onView={() => onViewLead(lead)}
               />
@@ -334,19 +285,29 @@ export function LeadsKanbanBoard({
 }: LeadsKanbanBoardProps) {
   const updateLeadStatus = useUpdateLeadStatus();
   const [activeLeadId, setActiveLeadId] = useState<string>();
-  const [stagedMove, setStagedMove] = useState<StagedMove>();
+  const [pendingMove, setPendingMove] = useState<PendingMove>();
+  const [feedback, setFeedback] = useState("");
   const activeLead = leads.find((lead) => lead.id === activeLeadId);
   const renderedLeads = leads.map((lead) =>
-    stagedMove?.leadId === lead.id
-      ? { ...lead, status: stagedMove.targetStatus }
+    pendingMove?.leadId === lead.id
+      ? { ...lead, status: pendingMove.targetStatus }
       : lead,
   );
+
+  useEffect(() => {
+    if (!feedback) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => setFeedback(""), 4000);
+    return () => window.clearTimeout(timeoutId);
+  }, [feedback]);
 
   function handleDragStart(event: DragStartEvent) {
     setActiveLeadId(String(event.operation.source?.id));
   }
 
-  function handleDragEnd(event: DragEndEvent) {
+  async function handleDragEnd(event: DragEndEvent) {
     setActiveLeadId(undefined);
 
     if (event.canceled) {
@@ -357,44 +318,38 @@ export function LeadsKanbanBoard({
     const targetStatus = event.operation.target?.id as LeadStatus | undefined;
     const lead = leads.find((currentLead) => currentLead.id === leadId);
 
-    if (
-      !lead ||
-      !targetStatus ||
-      !canTransitionStatus(lead.status, targetStatus)
-    ) {
+    if (!lead || !targetStatus || targetStatus === lead.status) {
       return;
     }
 
-    setStagedMove({
+    if (!canTransitionStatus(lead.status, targetStatus)) {
+      const validStatuses = getNextStatuses(lead.status)
+        .map((status) => STATUS_LABELS[status])
+        .join(" or ");
+      setFeedback(
+        `${STATUS_LABELS[lead.status]} leads can move only to ${validStatuses}.`,
+      );
+      return;
+    }
+
+    const nextMove = {
       leadId: lead.id,
-      sourceStatus: lead.status,
       targetStatus,
-      error: "",
-    });
-  }
-
-  async function confirmStagedMove() {
-    if (!stagedMove) {
-      return;
-    }
+    };
+    setPendingMove(nextMove);
 
     try {
       await updateLeadStatus.mutateAsync({
-        id: stagedMove.leadId,
-        status: stagedMove.targetStatus,
+        id: nextMove.leadId,
+        status: nextMove.targetStatus,
       });
-      setStagedMove(undefined);
+      setPendingMove(undefined);
     } catch (error) {
-      setStagedMove((currentMove) =>
-        currentMove
-          ? {
-              ...currentMove,
-              error:
-                error instanceof ApiError
-                  ? error.message
-                  : "The lead status could not be updated. Please try again.",
-            }
-          : undefined,
+      setPendingMove(undefined);
+      setFeedback(
+        error instanceof ApiError
+          ? `${error.message} The card was moved back.`
+          : "The lead status could not be updated. The card was moved back.",
       );
     }
   }
@@ -410,13 +365,10 @@ export function LeadsKanbanBoard({
             <LeadKanbanColumn
               key={status}
               activeLead={activeLead}
-              isSaving={updateLeadStatus.isPending}
-              isStagePending={Boolean(stagedMove)}
+              isMovePending={Boolean(pendingMove)}
               leads={renderedLeads.filter((lead) => lead.status === status)}
-              stagedMove={stagedMove}
+              pendingMove={pendingMove}
               status={status}
-              onCancelStage={() => setStagedMove(undefined)}
-              onConfirmStage={confirmStagedMove}
               onEditLead={onEditLead}
               onViewLead={onViewLead}
             />
@@ -426,6 +378,14 @@ export function LeadsKanbanBoard({
       <DragOverlay>
         {activeLead ? <LeadKanbanOverlay lead={activeLead} /> : null}
       </DragOverlay>
+      {feedback ? (
+        <div
+          role="alert"
+          className="fixed bottom-5 right-5 z-50 max-w-sm rounded-md border border-rose-200 bg-white px-4 py-3 text-sm leading-6 text-rose-700 shadow-lg"
+        >
+          {feedback}
+        </div>
+      ) : null}
     </DragDropProvider>
   );
 }

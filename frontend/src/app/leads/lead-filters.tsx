@@ -15,13 +15,9 @@ type LeadFiltersProps = {
   view: LeadView;
 };
 
-function getNextParams(query: string, statuses: LeadStatus[], view: LeadView) {
+function getNextParams(query: string, statuses: LeadStatus[]) {
   const params = new URLSearchParams();
   const trimmedQuery = query.trim();
-
-  if (view === "kanban") {
-    params.set("view", view);
-  }
 
   if (trimmedQuery) {
     params.set("q", trimmedQuery);
@@ -45,8 +41,9 @@ export function LeadFilters({ query, statuses, view }: LeadFiltersProps) {
       const trimmedQuery = nextQuery.trim();
       const effectiveQuery =
         trimmedQuery.length === 0 || trimmedQuery.length >= 3 ? nextQuery : "";
-      const queryString = getNextParams(effectiveQuery, nextStatuses, view);
-      router.push(queryString ? `/leads?${queryString}` : "/leads");
+      const queryString = getNextParams(effectiveQuery, nextStatuses);
+      const pathname = view === "kanban" ? "/board" : "/leads";
+      router.push(queryString ? `${pathname}?${queryString}` : pathname);
     },
     [router, view],
   );

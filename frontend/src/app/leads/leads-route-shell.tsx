@@ -17,6 +17,7 @@ type LeadsSearchParams = {
 type LeadsRouteShellProps = {
   searchParams: Promise<LeadsSearchParams>;
   modal?: ActiveLeadModal;
+  view?: LeadView;
 };
 
 function parseStatuses(value: string | string[] | undefined) {
@@ -40,11 +41,12 @@ function parseView(value: string | undefined): LeadView {
 export async function LeadsRouteShell({
   searchParams,
   modal,
+  view: forcedView,
 }: LeadsRouteShellProps) {
   const params = await searchParams;
   const query = params.q?.trim() ?? "";
   const statuses = parseStatuses(params.status);
-  const view = parseView(params.view);
+  const view = forcedView ?? parseView(params.view);
   const leads = await getLeads({ q: query, statuses });
   let activeModal: ActiveLeadModal | undefined;
 
