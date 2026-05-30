@@ -6,10 +6,26 @@ Mini Lead CRM for the Superleap frontend intern assessment. The app implements t
 
 ```txt
 Lead_CRM/
-  frontend/              # Next.js + TypeScript + Tailwind UI
+  frontend/
+    src/
+      app/                 # Next.js routes and route-level UI
+      components/
+        leads/             # Reusable lead forms, actions, and modals
+        ui/                # Shared modal, menu, and dialog primitives
+      lib/
+        api/               # API client and TanStack Query hooks
+        leads/             # Shared pipeline transition rules
+      types/               # Lead domain types
   backend/
-    api/                 # Provided Express API for local assessment data
+    api/
+      server.js            # Provided Express mock API
+      seed.json            # Local sample lead data
+      generate.js          # Larger dataset generator
 ```
+
+## Demo
+
+[Watch the 1-3 minute walkthrough](ADD_LOOM_LINK_HERE)
 
 ## Tech Stack
 
@@ -33,6 +49,13 @@ npm start
 
 The API runs at `http://localhost:4000`.
 
+Create the frontend environment file:
+
+```bash
+cd frontend
+cp .env.local.example .env.local
+```
+
 Install and run the frontend in a second terminal:
 
 ```bash
@@ -41,16 +64,7 @@ npm install
 npm run dev
 ```
 
-The frontend runs at `http://localhost:3000`.
-
-Create this file if it does not already exist:
-
-```bash
-cd frontend
-cp .env.local.example .env.local
-```
-
-Expected value:
+The frontend runs at `http://localhost:3000`. The example environment file contains:
 
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:4000
@@ -114,60 +128,54 @@ The Kanban board makes the same rules visible while dragging. Valid destination 
 
 ## Design Decisions
 
-Components are split by responsibility: route pages handle data fetching and page layout, `lib/api` owns HTTP behavior, `lib/leads/status.ts` owns pipeline rules, and reusable lead UI lives in `components/leads`.
+### Code organization
 
-Async behavior is explicit. Forms disable submit while invalid or saving, delete uses a confirmation dialog, status changes show saving/error feedback, and pages include loading/error states for API failures.
+- Route pages handle data loading and page composition.
+- `lib/api` owns HTTP requests and TanStack Query hooks.
+- `lib/leads/status.ts` is the single frontend source of truth for allowed status transitions.
+- Reusable forms, actions, modals, and shared UI primitives live under `components`.
+- Async states are visible: forms disable while saving, destructive actions use confirmation dialogs, and loading, empty, not-found, and API-error states are handled explicitly.
 
-List and Kanban use dedicated routes. Search and status filters stay in URL params so filtered views remain shareable and survive route switches and refreshes, for example:
+### List and Kanban navigation
+
+- List and Kanban use dedicated `/leads` and `/board` routes instead of hiding the board behind local-only state.
+- Search and status filters stay in URL params so they survive route switches, refreshes, and shared links.
+- Search input uses a local draft and debounced URL updates. The filter component stays mounted during refreshes so users can type continuously without losing focus.
+
+For example:
 
 ```txt
 /board?q=aman&status=NEW
 ```
 
-Kanban drag-and-drop uses `@dnd-kit/react` because it provides focused draggable and droppable primitives, pointer and keyboard interactions, touch-aware sensors, drag overlays, and disabled target handling without bringing in a large UI framework. The board reuses the same centralized transition rules as the list actions and the API, processes one optimistic move at a time, and keeps invalid transitions API-free.
+### Kanban interaction rules
 
-The layout is intentionally full width so all five columns have useful space. Kanban columns and the list table use bounded `42rem` scroll regions, keeping the page readable when a status contains many leads. The table header remains sticky while rows scroll. Global scrollbars are reduced to a minimal neutral indicator, and embedded create/edit forms use edge-to-edge modal footers so their visual structure matches the rest of the interface.
+- Kanban drag-and-drop uses `@dnd-kit/react` because it provides focused draggable and droppable primitives, pointer and keyboard interactions, touch-aware sensors, drag overlays, and disabled target handling without bringing in a large UI framework.
+- The full card surface is draggable. A separate drag button was removed to keep the interaction direct.
+- Double-click opens a card's detail modal. A single click does not open the modal, which avoids accidental opens while preparing to drag. Keyboard users can open the focused card with Enter.
+- When dragging starts, only allowed destinations stay visually active. Invalid columns are muted so the UI explains the state machine before the user drops the card.
+- A valid drop moves the card immediately and sends the API request optimistically. If the request fails, the card returns to its original column and a toast explains the rollback.
+- An invalid drop snaps back, shows a clear toast, and sends no API request.
+- `CONVERTED` and `LOST` cards remain locked because the API treats them as terminal states.
+
+### Layout and visual consistency
+
+- The leads workspace is intentionally full width so all five Kanban columns have useful space.
+- Each Kanban column has its own bounded `42rem` scroll area. A column with 50 or more cards remains readable without making the entire page excessively tall.
+- The list view follows the same approach: rows scroll inside a bounded `42rem` table region while the header stays sticky.
+- Global scrollbars are reduced to a minimal neutral indicator to keep dense list and board views visually quiet.
+- Embedded create and edit forms use edge-to-edge modal footers with a clear divider, matching the structure of the other dialogs.
 
 ## What I Would Improve With More Time
 
 - Add Level 3 bulk actions and virtualization for large datasets.
-- Add optimistic delete updates with rollback for an even faster feel.
 - Add automated browser tests for create/edit/delete/status flows.
 - Improve concurrent edit handling with updated timestamps or conflict messaging.
 
 For offline support, I would add a local mutation queue, cache recent lead data, and reconcile changes when the API becomes available again.
 
+For concurrent edits, I would use `updated_at` as a version check or add an ETag. The API would reject stale updates with a conflict response, and the UI would ask the user to refresh or review the newer data before saving again.
+
 ## AI Usage Note
 
-I used AI assistance to break the assessment into tasks, scaffold the project structure, and iterate on implementation details. I reviewed and adjusted the code as it was added, kept commits task-sized, and verified behavior with lint, production builds, and live local API checks.
-
-## Submission Recording Checklist
-
-- Show `/leads` loading data from the local API
-- Search and filter leads, then clear filters
-- Create a new lead
-- Open a lead detail page
-- Edit lead contact details
-- Change a valid status
-- Show a terminal lead as locked
-- Delete a lead with confirmation
-- Switch between List and Kanban views
-- Drag an active lead and show invalid columns becoming disabled
-- Confirm valid Kanban moves update immediately and failed moves roll back
-
-## Completed Task Checklist
-
-- [x] Task 0: Project setup
-- [x] Task 1: Data model and API layer
-- [x] Task 2: Main leads page
-- [x] Task 3: Search and filters
-- [x] Task 4: Create lead
-- [x] Task 5: View and edit lead
-- [x] Task 6: Delete lead
-- [x] Task 7: Status transitions
-- [x] Task 8: Polish pass
-- [x] Task 9: README and submission prep
-- [x] Level 2 Task 1: List and Kanban view toggle
-- [x] Level 2 Task 2: Responsive Kanban board
-- [x] Level 2 Task 3: Rule-aware optimistic drag-and-drop
-- [x] Level 2 Task 4: Documentation and regression pass
+I used AI assistance to break the work into small tasks, review edge cases, and iterate on UI details. I reviewed the suggestions before using them and adjusted ideas that did not fit the requirements. For example, I replaced an early confirm-before-save Kanban flow with optimistic updates and rollback feedback. I verified the final behavior with lint checks, production builds, and manual testing.
