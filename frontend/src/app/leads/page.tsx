@@ -8,6 +8,7 @@ export default async function LeadsPage({
   searchParams: Promise<{
     q?: string;
     status?: string | string[];
+    view?: string;
   }>;
 }) {
   return <LeadsRouteShell searchParams={searchParams} />;

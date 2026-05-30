@@ -8,6 +8,7 @@ export default function NewLeadPage({
   searchParams: Promise<{
     q?: string;
     status?: string | string[];
+    view?: string;
   }>;
 }) {
   return (

@@ -8,6 +8,8 @@ export const LEAD_STATUSES = [
 
 export type LeadStatus = (typeof LEAD_STATUSES)[number];
 
+export type LeadView = "list" | "kanban";
+
 export type Lead = {
   id: string;
   name: string;

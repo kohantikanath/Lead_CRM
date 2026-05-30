@@ -2,11 +2,16 @@ import { notFound } from "next/navigation";
 import { LeadsClient, type ActiveLeadModal } from "@/app/leads/leads-client";
 import { ApiError } from "@/lib/api/client";
 import { getLead, getLeads } from "@/lib/api/leads";
-import { LEAD_STATUSES, type LeadStatus } from "@/types/lead";
+import {
+  LEAD_STATUSES,
+  type LeadStatus,
+  type LeadView,
+} from "@/types/lead";
 
 type LeadsSearchParams = {
   q?: string;
   status?: string | string[];
+  view?: string;
 };
 
 type LeadsRouteShellProps = {
@@ -28,6 +33,10 @@ function parseStatuses(value: string | string[] | undefined) {
     );
 }
 
+function parseView(value: string | undefined): LeadView {
+  return value === "kanban" ? "kanban" : "list";
+}
+
 export async function LeadsRouteShell({
   searchParams,
   modal,
@@ -35,6 +44,7 @@ export async function LeadsRouteShell({
   const params = await searchParams;
   const query = params.q?.trim() ?? "";
   const statuses = parseStatuses(params.status);
+  const view = parseView(params.view);
   const leads = await getLeads({ q: query, statuses });
   let activeModal: ActiveLeadModal | undefined;
 
@@ -63,6 +73,7 @@ export async function LeadsRouteShell({
       initialLeads={leads}
       query={query}
       statuses={statuses}
+      view={view}
     />
   );
 }

@@ -10,6 +10,7 @@ export default async function LeadDetailPage({
   searchParams: Promise<{
     q?: string;
     status?: string | string[];
+    view?: string;
   }>;
 }) {
   const { id } = await params;

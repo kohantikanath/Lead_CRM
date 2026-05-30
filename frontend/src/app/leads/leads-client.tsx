@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { LeadFilters } from "@/app/leads/lead-filters";
 import { LeadActions } from "@/components/leads/lead-actions";
 import { LeadCreateModal } from "@/components/leads/lead-create-modal";
@@ -10,12 +11,18 @@ import { StatusBadge } from "@/components/leads/status-badge";
 import { useLeads } from "@/lib/api/lead-hooks";
 import type { LeadListParams } from "@/lib/api/leads";
 import { STATUS_LABELS } from "@/lib/leads/status";
-import { LEAD_STATUSES, type Lead, type LeadStatus } from "@/types/lead";
+import {
+  LEAD_STATUSES,
+  type Lead,
+  type LeadStatus,
+  type LeadView,
+} from "@/types/lead";
 
 type LeadsClientProps = {
   initialLeads: Lead[];
   query: string;
   statuses: LeadStatus[];
+  view: LeadView;
   activeModal?: ActiveLeadModal;
 };
 
@@ -169,13 +176,28 @@ export function LeadsClient({
   initialLeads,
   query,
   statuses,
+  view,
 }: LeadsClientProps) {
+  const router = useRouter();
   const [activeModal, setActiveModal] = useState(initialActiveModal);
   const params: LeadListParams = { q: query, statuses };
   const { data, isError, isFetching } = useLeads(params, initialLeads);
   const leads = data ?? [];
   const hasFilters = Boolean(query || statuses.length);
   const statusCounts = getStatusCounts(leads);
+
+  function setView(nextView: LeadView) {
+    const searchParams = new URLSearchParams(window.location.search);
+
+    if (nextView === "kanban") {
+      searchParams.set("view", nextView);
+    } else {
+      searchParams.delete("view");
+    }
+
+    const queryString = searchParams.toString();
+    router.push(queryString ? `/leads?${queryString}` : "/leads");
+  }
 
   function getListUrl() {
     return `/leads${window.location.search}`;
@@ -270,7 +292,7 @@ export function LeadsClient({
         </section>
 
         <section className="mt-6 overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm">
-          <div className="px-5 py-4">
+          <div className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="text-sm font-semibold text-zinc-950">
                 {hasFilters ? "Filtered leads" : "All leads"}
@@ -279,6 +301,27 @@ export function LeadsClient({
                 {leads.length} {leads.length === 1 ? "lead" : "leads"}
                 {isFetching ? "..." : ""}
               </p>
+            </div>
+            <div
+              aria-label="Lead view"
+              className="inline-flex w-fit rounded-md border border-zinc-200 bg-zinc-50 p-1"
+              role="group"
+            >
+              {(["list", "kanban"] as const).map((option) => (
+                <button
+                  key={option}
+                  type="button"
+                  aria-pressed={view === option}
+                  onClick={() => setView(option)}
+                  className={`h-8 rounded px-3 text-xs font-medium capitalize transition ${
+                    view === option
+                      ? "bg-white text-zinc-950 shadow-sm"
+                      : "text-zinc-500 hover:text-zinc-800"
+                  }`}
+                >
+                  {option}
+                </button>
+              ))}
             </div>
           </div>
           {isError ? (
@@ -290,12 +333,21 @@ export function LeadsClient({
             key={`${query}:${statuses.join(",")}`}
             query={query}
             statuses={statuses}
+            view={view}
           />
-          <LeadsTable
-            leads={leads}
-            hasFilters={hasFilters}
-            onOpenModal={openModal}
-          />
+          {view === "list" ? (
+            <LeadsTable
+              leads={leads}
+              hasFilters={hasFilters}
+              onOpenModal={openModal}
+            />
+          ) : (
+            <div className="flex min-h-72 items-center justify-center border-t border-zinc-200 px-6 text-center">
+              <p className="text-sm text-zinc-500">
+                Kanban board will be added in the next task.
+              </p>
+            </div>
+          )}
         </section>
         </div>
       </main>

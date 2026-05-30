@@ -2,17 +2,26 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { LEAD_STATUSES, type LeadStatus } from "@/types/lead";
+import {
+  LEAD_STATUSES,
+  type LeadStatus,
+  type LeadView,
+} from "@/types/lead";
 import { STATUS_LABELS } from "@/lib/leads/status";
 
 type LeadFiltersProps = {
   query: string;
   statuses: LeadStatus[];
+  view: LeadView;
 };
 
-function getNextParams(query: string, statuses: LeadStatus[]) {
+function getNextParams(query: string, statuses: LeadStatus[], view: LeadView) {
   const params = new URLSearchParams();
   const trimmedQuery = query.trim();
+
+  if (view === "kanban") {
+    params.set("view", view);
+  }
 
   if (trimmedQuery) {
     params.set("q", trimmedQuery);
@@ -25,7 +34,7 @@ function getNextParams(query: string, statuses: LeadStatus[]) {
   return params.toString();
 }
 
-export function LeadFilters({ query, statuses }: LeadFiltersProps) {
+export function LeadFilters({ query, statuses, view }: LeadFiltersProps) {
   const router = useRouter();
   const [draftQuery, setDraftQuery] = useState(query);
   const [draftStatuses, setDraftStatuses] = useState(statuses);
@@ -36,10 +45,10 @@ export function LeadFilters({ query, statuses }: LeadFiltersProps) {
       const trimmedQuery = nextQuery.trim();
       const effectiveQuery =
         trimmedQuery.length === 0 || trimmedQuery.length >= 3 ? nextQuery : "";
-      const queryString = getNextParams(effectiveQuery, nextStatuses);
+      const queryString = getNextParams(effectiveQuery, nextStatuses, view);
       router.push(queryString ? `/leads?${queryString}` : "/leads");
     },
-    [router],
+    [router, view],
   );
 
   useEffect(() => {
