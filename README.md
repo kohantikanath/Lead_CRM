@@ -25,7 +25,7 @@ Lead_CRM/
 
 ## Demo
 
-[Watch the 3-4 minute walkthrough](Demo-Video.mp4)
+[Watch the 3-4 minute walkthrough](https://drive.google.com/file/d/1tibtfLP7xC_pyH6HT0KHYwdKiFy8RRVJ/view?usp=sharing)
 
 ## Tech Stack
 
