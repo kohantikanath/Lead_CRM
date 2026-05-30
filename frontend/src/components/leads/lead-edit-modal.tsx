@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { LeadForm } from "@/components/leads/lead-form";
 import { Modal } from "@/components/ui/modal";
 import { useLead } from "@/lib/api/lead-hooks";
@@ -9,21 +8,23 @@ import type { Lead } from "@/types/lead";
 type LeadEditModalProps = {
   leadId: string;
   initialLead?: Lead;
+  onClose: () => void;
+  onSuccess: (lead: Lead) => void;
 };
 
-export function LeadEditModal({ leadId, initialLead }: LeadEditModalProps) {
-  const router = useRouter();
+export function LeadEditModal({
+  leadId,
+  initialLead,
+  onClose,
+  onSuccess,
+}: LeadEditModalProps) {
   const { data: lead, isError, isLoading } = useLead(leadId, initialLead);
-
-  function closeModal() {
-    router.push("/leads");
-  }
 
   return (
     <Modal
       title="Edit lead"
       description="Update contact details and source."
-      onClose={closeModal}
+      onClose={onClose}
       maxWidthClassName="max-w-3xl"
     >
       {isLoading ? (
@@ -39,8 +40,7 @@ export function LeadEditModal({ leadId, initialLead }: LeadEditModalProps) {
           mode="edit"
           lead={lead}
           embedded
-          onCancel={closeModal}
-          onSuccess={(updatedLead) => router.push(`/leads/${updatedLead.id}`)}
+          onSuccess={onSuccess}
         />
       ) : null}
     </Modal>

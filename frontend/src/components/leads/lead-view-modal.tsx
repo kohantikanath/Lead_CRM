@@ -1,8 +1,7 @@
 "use client";
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Modal } from "@/components/ui/modal";
+import { PrimaryStatusAction } from "@/components/leads/primary-status-action";
 import { StatusBadge } from "@/components/leads/status-badge";
 import { useLead } from "@/lib/api/lead-hooks";
 import type { ReactNode } from "react";
@@ -11,6 +10,8 @@ import type { Lead } from "@/types/lead";
 type LeadViewModalProps = {
   leadId: string;
   initialLead?: Lead;
+  onClose: () => void;
+  onEdit: () => void;
 };
 
 function formatDateTime(value: string) {
@@ -37,36 +38,33 @@ function DetailItem({
   );
 }
 
-export function LeadViewModal({ leadId, initialLead }: LeadViewModalProps) {
-  const router = useRouter();
+export function LeadViewModal({
+  leadId,
+  initialLead,
+  onClose,
+  onEdit,
+}: LeadViewModalProps) {
   const { data: lead, isError, isLoading } = useLead(leadId, initialLead);
-
-  function closeModal() {
-    router.push("/leads");
-  }
 
   return (
     <Modal
       title={lead?.name ?? "Lead details"}
       description={lead?.email}
-      onClose={closeModal}
+      onClose={onClose}
       maxWidthClassName="max-w-2xl"
       footer={
-        <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-          <button
-            type="button"
-            onClick={closeModal}
-            className="h-10 rounded-md border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-700 shadow-sm hover:border-zinc-300"
-          >
-            Close
-          </button>
+        <div className="flex flex-wrap justify-end gap-3">
           {lead ? (
-            <Link
-              href={`/leads/${lead.id}/edit`}
-              className="inline-flex h-10 items-center justify-center rounded-md bg-zinc-950 px-4 text-sm font-medium text-white shadow-sm hover:bg-zinc-800"
-            >
-              Edit Lead
-            </Link>
+            <>
+              <PrimaryStatusAction lead={lead} />
+              <button
+                type="button"
+                onClick={onEdit}
+                className="inline-flex h-8 items-center justify-center rounded-md bg-zinc-950 px-4 text-xs font-medium text-white shadow-sm hover:bg-zinc-800"
+              >
+                Edit Lead
+              </button>
+            </>
           ) : null}
         </div>
       }
@@ -81,7 +79,10 @@ export function LeadViewModal({ leadId, initialLead }: LeadViewModalProps) {
       ) : null}
       {lead ? (
         <dl className="grid gap-4 sm:grid-cols-2">
-          <DetailItem label="Status" value={<StatusBadge status={lead.status} />} />
+          <DetailItem
+            label="Status"
+            value={<StatusBadge status={lead.status} />}
+          />
           <DetailItem label="Phone" value={lead.phone ?? "No phone"} />
           <DetailItem
             label="Source"

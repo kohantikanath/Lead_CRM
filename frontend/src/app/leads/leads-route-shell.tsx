@@ -11,10 +11,7 @@ type LeadsSearchParams = {
 
 type LeadsRouteShellProps = {
   searchParams: Promise<LeadsSearchParams>;
-  modal?: {
-    id: string;
-    mode: ActiveLeadModal["mode"];
-  };
+  modal?: ActiveLeadModal;
 };
 
 function parseStatuses(value: string | string[] | undefined) {
@@ -41,7 +38,9 @@ export async function LeadsRouteShell({
   const leads = await getLeads({ q: query, statuses });
   let activeModal: ActiveLeadModal | undefined;
 
-  if (modal) {
+  if (modal?.mode === "new") {
+    activeModal = modal;
+  } else if (modal) {
     try {
       const lead = await getLead(modal.id);
       activeModal = {

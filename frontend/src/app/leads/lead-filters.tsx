@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { LEAD_STATUSES, type LeadStatus } from "@/types/lead";
 import { STATUS_LABELS } from "@/lib/leads/status";
@@ -29,6 +29,7 @@ export function LeadFilters({ query, statuses }: LeadFiltersProps) {
   const router = useRouter();
   const [draftQuery, setDraftQuery] = useState(query);
   const [draftStatuses, setDraftStatuses] = useState(statuses);
+  const isInitialSearchRender = useRef(true);
 
   const updateFilters = useCallback(
     (nextQuery: string, nextStatuses: LeadStatus[]) => {
@@ -42,6 +43,11 @@ export function LeadFilters({ query, statuses }: LeadFiltersProps) {
   );
 
   useEffect(() => {
+    if (isInitialSearchRender.current) {
+      isInitialSearchRender.current = false;
+      return;
+    }
+
     const trimmedQuery = draftQuery.trim();
 
     if (trimmedQuery.length > 0 && trimmedQuery.length < 3) {
@@ -56,14 +62,12 @@ export function LeadFilters({ query, statuses }: LeadFiltersProps) {
   }, [draftQuery, draftStatuses, updateFilters]);
 
   function handleStatusChange(status: LeadStatus, checked: boolean) {
-    setDraftStatuses((current) => {
-      const nextStatuses = checked
-        ? [...current, status]
-        : current.filter((currentStatus) => currentStatus !== status);
+    const nextStatuses = checked
+      ? [...draftStatuses, status]
+      : draftStatuses.filter((currentStatus) => currentStatus !== status);
 
-      updateFilters(draftQuery, nextStatuses);
-      return nextStatuses;
-    });
+    setDraftStatuses(nextStatuses);
+    updateFilters(draftQuery, nextStatuses);
   }
 
   function clearFilters() {
@@ -73,7 +77,7 @@ export function LeadFilters({ query, statuses }: LeadFiltersProps) {
   }
 
   return (
-    <div className="flex flex-col gap-4 border-t border-zinc-100 px-5 py-4">
+    <div className="flex flex-col gap-4 border-t border-zinc-100 px-5 py-5">
       <div className="grid gap-3 lg:grid-cols-[minmax(220px,360px)_1fr_auto] lg:items-end">
         <label className="block">
           <span className="text-xs font-medium text-zinc-500">

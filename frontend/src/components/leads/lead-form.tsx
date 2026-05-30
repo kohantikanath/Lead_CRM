@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useMemo, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { ApiError } from "@/lib/api/client";
@@ -20,11 +19,18 @@ type LeadFormProps = {
   mode: LeadFormMode;
   lead?: Lead;
   embedded?: boolean;
-  onCancel?: () => void;
   onSuccess?: (lead: Lead) => void;
 };
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PHONE_RE = /^\+?[0-9][0-9\s-]{6,19}$/;
+const MAX_NAME_LENGTH = 80;
+const MAX_EMAIL_LENGTH = 254;
+const MAX_PHONE_LENGTH = 20;
+
+function hasAtLeastTwoWords(value: string) {
+  return value.trim().split(/\s+/).filter(Boolean).length >= 2;
+}
 
 function getInitialValues(lead?: Lead): LeadFormValues {
   return {
@@ -48,7 +54,6 @@ export function LeadForm({
   mode,
   lead,
   embedded = false,
-  onCancel,
   onSuccess,
 }: LeadFormProps) {
   const router = useRouter();
@@ -63,12 +68,23 @@ export function LeadForm({
 
     if (!values.name.trim()) {
       nextErrors.name = "Name is required.";
+    } else if (!hasAtLeastTwoWords(values.name)) {
+      nextErrors.name = "Enter at least first and last name.";
+    } else if (values.name.trim().length > MAX_NAME_LENGTH) {
+      nextErrors.name = `Name must be ${MAX_NAME_LENGTH} characters or fewer.`;
     }
 
     if (!values.email.trim()) {
       nextErrors.email = "Email is required.";
     } else if (!EMAIL_RE.test(values.email.trim())) {
       nextErrors.email = "Enter a valid email address.";
+    } else if (values.email.trim().length > MAX_EMAIL_LENGTH) {
+      nextErrors.email = `Email must be ${MAX_EMAIL_LENGTH} characters or fewer.`;
+    }
+
+    if (values.phone.trim() && !PHONE_RE.test(values.phone.trim())) {
+      nextErrors.phone =
+        "Phone must be 7-20 characters and can include digits, spaces, hyphens, or a leading plus.";
     }
 
     return nextErrors;
@@ -158,6 +174,7 @@ export function LeadForm({
           <span className="text-sm font-medium text-zinc-700">Name</span>
           <input
             value={values.name}
+            maxLength={MAX_NAME_LENGTH}
             onChange={(event) => updateField("name", event.target.value)}
             aria-invalid={Boolean(errors.name)}
             aria-describedby={errors.name ? "name-error" : undefined}
@@ -176,6 +193,7 @@ export function LeadForm({
           <input
             type="email"
             value={values.email}
+            maxLength={MAX_EMAIL_LENGTH}
             onChange={(event) => updateField("email", event.target.value)}
             aria-invalid={Boolean(errors.email)}
             aria-describedby={errors.email ? "email-error" : undefined}
@@ -193,10 +211,18 @@ export function LeadForm({
           <span className="text-sm font-medium text-zinc-700">Phone</span>
           <input
             value={values.phone}
+            maxLength={MAX_PHONE_LENGTH}
             onChange={(event) => updateField("phone", event.target.value)}
+            aria-invalid={Boolean(errors.phone)}
+            aria-describedby={errors.phone ? "phone-error" : undefined}
             className="mt-1 h-11 w-full rounded-md border border-zinc-200 px-3 text-sm text-zinc-950 outline-none transition focus:border-zinc-400 focus:ring-4 focus:ring-zinc-100"
             placeholder="+91-9876543210"
           />
+          {errors.phone ? (
+            <p id="phone-error" className="mt-1 text-xs text-rose-600">
+              {errors.phone}
+            </p>
+          ) : null}
         </label>
 
         <label className="block">
@@ -217,22 +243,6 @@ export function LeadForm({
       </div>
 
       <div className="flex flex-col-reverse gap-3 border-t border-zinc-200 bg-zinc-50 px-5 py-4 sm:flex-row sm:justify-end">
-        {onCancel ? (
-          <button
-            type="button"
-            onClick={onCancel}
-            className="inline-flex h-10 items-center justify-center rounded-md border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-700 shadow-sm hover:border-zinc-300"
-          >
-            Cancel
-          </button>
-        ) : (
-          <Link
-            href={mode === "edit" && lead ? `/leads/${lead.id}` : "/leads"}
-            className="inline-flex h-10 items-center justify-center rounded-md border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-700 shadow-sm hover:border-zinc-300"
-          >
-            Cancel
-          </Link>
-        )}
         <button
           type="submit"
           disabled={isInvalid || isSubmitting}

@@ -9,6 +9,7 @@ type ModalProps = {
   description?: string;
   footer?: ReactNode;
   maxWidthClassName?: string;
+  showCloseButton?: boolean;
 };
 
 export function Modal({
@@ -18,6 +19,7 @@ export function Modal({
   description,
   footer,
   maxWidthClassName = "max-w-lg",
+  showCloseButton = true,
 }: ModalProps) {
   return (
     <div
@@ -51,14 +53,16 @@ export function Modal({
                 </p>
               ) : null}
             </div>
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-zinc-200 text-lg leading-none text-zinc-500 hover:border-zinc-300 hover:text-zinc-950"
-              aria-label="Close"
-            >
-              x
-            </button>
+            {showCloseButton ? (
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-zinc-200 text-lg leading-none text-zinc-500 hover:border-zinc-300 hover:text-zinc-950"
+                aria-label="Close"
+              >
+                x
+              </button>
+            ) : null}
           </div>
         </div>
         <div className="px-5 py-5">{children}</div>
