@@ -90,17 +90,31 @@ function LeadKanbanCard({
   onView,
 }: KanbanCardProps) {
   const isLocked = isTerminalStatus(lead.status);
-  const { ref, handleRef, isDragging } = useDraggable({
+  const { ref, isDragging } = useDraggable({
     id: lead.id,
     data: lead,
     disabled: isLocked || isStaged || isDragDisabled,
   });
 
+  function handleDoubleClick(event: React.MouseEvent<HTMLElement>) {
+    const target = event.target;
+
+    if (
+      (target instanceof Element &&
+        target.closest("button, a, input, select, textarea"))
+    ) {
+      return;
+    }
+
+    onView();
+  }
+
   return (
     <article
       ref={ref}
       tabIndex={0}
-      onClick={onView}
+      title="Double-click to view lead"
+      onDoubleClick={handleDoubleClick}
       onKeyDown={(event) => {
         if (event.key === "Enter" && event.target === event.currentTarget) {
           onView();
@@ -109,7 +123,11 @@ function LeadKanbanCard({
       className={`rounded-md border bg-white p-3 shadow-sm transition focus:outline-none focus:ring-4 focus:ring-zinc-100 ${
         isStaged
           ? "border-zinc-400 shadow"
-          : "cursor-pointer border-zinc-200 hover:border-zinc-300 hover:shadow focus:border-zinc-400"
+          : "border-zinc-200 hover:border-zinc-300 hover:shadow focus:border-zinc-400"
+      } ${
+        !isLocked && !isDragDisabled && !isStaged
+          ? "cursor-grab active:cursor-grabbing"
+          : "cursor-pointer"
       } ${isDragging ? "opacity-30" : ""}`}
     >
       <div className="flex items-start justify-between gap-3">
@@ -127,17 +145,6 @@ function LeadKanbanCard({
           </div>
         </div>
         <div className="flex items-center gap-1">
-          {!isLocked && !isStaged && !isDragDisabled ? (
-            <button
-              ref={handleRef}
-              type="button"
-              aria-label={`Drag ${lead.name} to update status`}
-              onClick={(event) => event.stopPropagation()}
-              className="inline-flex h-8 w-8 cursor-grab items-center justify-center rounded-md border border-zinc-200 bg-white text-sm text-zinc-500 shadow-sm hover:border-zinc-300 hover:text-zinc-800 active:cursor-grabbing"
-            >
-              <span aria-hidden="true">&#8942;&#8942;</span>
-            </button>
-          ) : null}
           {!isStaged ? (
             <LeadActions
               lead={lead}
