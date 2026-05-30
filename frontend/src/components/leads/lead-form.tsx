@@ -164,11 +164,7 @@ export function LeadForm({
       ) : null}
 
       <div
-        className={
-          embedded
-            ? "grid gap-5 md:grid-cols-2"
-            : "grid gap-5 px-5 py-5 md:grid-cols-2"
-        }
+        className="grid gap-5 px-5 py-5 md:grid-cols-2"
       >
         <label className="block">
           <span className="text-sm font-medium text-zinc-700">Name</span>

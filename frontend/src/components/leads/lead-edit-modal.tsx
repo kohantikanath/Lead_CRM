@@ -25,6 +25,7 @@ export function LeadEditModal({
       title="Edit lead"
       description="Update contact details and source."
       onClose={onClose}
+      contentClassName={lead ? "p-0" : "px-5 py-5"}
       maxWidthClassName="max-w-3xl"
     >
       {isLoading ? (

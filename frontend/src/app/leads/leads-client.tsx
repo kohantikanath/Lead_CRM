@@ -87,31 +87,46 @@ function LeadsTable({
   }
 
   return (
-    <div className="w-full overflow-x-auto">
+    <div className="h-[42rem] w-full overflow-auto">
       <table
         className="w-full border-separate border-spacing-0 text-left"
         style={{ minWidth: "max(100%, 960px)" }}
       >
         <thead>
           <tr className="text-xs font-semibold uppercase tracking-normal text-zinc-500">
-            <th scope="col" className="border-y border-zinc-200 px-5 py-3">
+            <th
+              scope="col"
+              className="sticky top-0 z-10 border-y border-zinc-200 bg-white px-5 py-3"
+            >
               Name
             </th>
-            <th scope="col" className="border-y border-zinc-200 px-5 py-3">
+            <th
+              scope="col"
+              className="sticky top-0 z-10 border-y border-zinc-200 bg-white px-5 py-3"
+            >
               Email
             </th>
-            <th scope="col" className="border-y border-zinc-200 px-5 py-3">
+            <th
+              scope="col"
+              className="sticky top-0 z-10 border-y border-zinc-200 bg-white px-5 py-3"
+            >
               Status
             </th>
-            <th scope="col" className="border-y border-zinc-200 px-5 py-3">
+            <th
+              scope="col"
+              className="sticky top-0 z-10 border-y border-zinc-200 bg-white px-5 py-3"
+            >
               Source
             </th>
-            <th scope="col" className="border-y border-zinc-200 px-5 py-3">
+            <th
+              scope="col"
+              className="sticky top-0 z-10 border-y border-zinc-200 bg-white px-5 py-3"
+            >
               Last Updated
             </th>
             <th
               scope="col"
-              className="border-y border-zinc-200 px-5 py-3 text-right"
+              className="sticky top-0 z-10 border-y border-zinc-200 bg-white px-5 py-3 text-right"
             >
               Actions
             </th>
@@ -266,7 +281,7 @@ export function LeadsClient({
   return (
     <>
       <main className="min-h-screen bg-[#f6f7f9] text-zinc-950">
-        <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 py-6 sm:px-6 lg:px-8">
+        <div className="mx-auto flex min-h-screen w-full flex-col px-4 py-6 sm:px-6 lg:px-8">
         <header className="flex flex-col gap-5 border-b border-zinc-200 pb-6 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="text-sm font-medium text-zinc-500">Lead pipeline</p>

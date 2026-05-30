@@ -13,11 +13,11 @@ Lead_CRM/
 
 ## Tech Stack
 
-**Frontend:** Next.js App Router with TypeScript. I chose Next.js because the assessment allows React/Next.js, and App Router gives clean deep-linkable routes for `/leads`, `/leads/new`, `/leads/[id]`, and `/leads/[id]/edit`.
+**Frontend:** Next.js App Router with TypeScript. I chose Next.js because the assessment allows React/Next.js, and App Router gives clean deep-linkable routes for `/leads`, `/board`, `/leads/new`, `/leads/[id]`, and `/leads/[id]/edit`.
 
 **Styling:** Tailwind CSS. It keeps the UI implementation lightweight and makes it easy to tune spacing, table density, focus states, and responsive behavior without adding a heavy component library.
 
-**State:** No global state library. Server data is fetched through a small API layer, URL state is used for search/filter, and local component state is used for forms, confirmation dialogs, and async button states.
+**State:** TanStack Query owns server state and cache refreshes. URL state is used for the current view, search, and filters. Local component state is used for forms, dialogs, drag feedback, and optimistic board movement.
 
 **API:** Provided Express mock API under `backend/api`. The frontend integrates with it through `NEXT_PUBLIC_API_URL`, so the UI exercises real HTTP loading, mutation, error, and refresh behavior.
 
@@ -76,8 +76,12 @@ node --check server.js
 ## Features
 
 - Lead list with semantic table markup
-- List and Kanban views with refresh-safe URL state
+- Dedicated `/leads` list and `/board` Kanban routes
+- List and Kanban switching with refresh-safe URL state
 - Responsive five-column Kanban board with drag-and-drop status transitions
+- Optimistic Kanban movement with API-failure rollback feedback
+- Muted invalid drop destinations with API-free rejection feedback
+- Direct card dragging, double-click detail opening, and keyboard detail access
 - Search by name/email using URL query state
 - Status filters using URL query state
 - Create lead form with inline validation
@@ -86,7 +90,10 @@ node --check server.js
 - Status transition control that only shows valid next statuses
 - Locked UI for terminal statuses: `CONVERTED` and `LOST`
 - Loading, empty, error, and not-found states
-- Pipeline summary counts and responsive table behavior
+- Pipeline summary counts and responsive full-width layout
+- Bounded list and Kanban scroll regions for larger datasets
+- Sticky list headers and compact site-wide scrollbar styling
+- Consistent edge-to-edge modal form footers
 
 ## Status Rules
 
@@ -111,18 +118,20 @@ Components are split by responsibility: route pages handle data fetching and pag
 
 Async behavior is explicit. Forms disable submit while invalid or saving, delete uses a confirmation dialog, status changes show saving/error feedback, and pages include loading/error states for API failures.
 
-URL state is used for view selection, search, and filters so filtered views are shareable and survive refreshes, for example:
+List and Kanban use dedicated routes. Search and status filters stay in URL params so filtered views remain shareable and survive route switches and refreshes, for example:
 
 ```txt
 /board?q=aman&status=NEW
 ```
 
-Kanban drag-and-drop uses `@dnd-kit/react`. The board reuses the same centralized transition rules as the list actions and the API, processes one move at a time, and keeps invalid transitions API-free. Each column has its own scroll area so the board stays readable with larger lead volumes.
+Kanban drag-and-drop uses `@dnd-kit/react` because it provides focused draggable and droppable primitives, pointer and keyboard interactions, touch-aware sensors, drag overlays, and disabled target handling without bringing in a large UI framework. The board reuses the same centralized transition rules as the list actions and the API, processes one optimistic move at a time, and keeps invalid transitions API-free.
+
+The layout is intentionally full width so all five columns have useful space. Kanban columns and the list table use bounded `42rem` scroll regions, keeping the page readable when a status contains many leads. The table header remains sticky while rows scroll. Global scrollbars are reduced to a minimal neutral indicator, and embedded create/edit forms use edge-to-edge modal footers so their visual structure matches the rest of the interface.
 
 ## What I Would Improve With More Time
 
 - Add Level 3 bulk actions and virtualization for large datasets.
-- Add optimistic status/delete updates with rollback for an even faster feel.
+- Add optimistic delete updates with rollback for an even faster feel.
 - Add automated browser tests for create/edit/delete/status flows.
 - Improve concurrent edit handling with updated timestamps or conflict messaging.
 

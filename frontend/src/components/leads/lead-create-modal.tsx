@@ -16,6 +16,7 @@ export function LeadCreateModal({
       title="New lead"
       description="Capture a new prospect with the minimum details needed to start the pipeline."
       onClose={onClose}
+      contentClassName="p-0"
       maxWidthClassName="max-w-3xl"
     >
       <LeadForm

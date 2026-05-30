@@ -8,6 +8,7 @@ type ModalProps = {
   onClose: () => void;
   description?: string;
   footer?: ReactNode;
+  contentClassName?: string;
   maxWidthClassName?: string;
   showCloseButton?: boolean;
 };
@@ -18,6 +19,7 @@ export function Modal({
   onClose,
   description,
   footer,
+  contentClassName = "px-5 py-5",
   maxWidthClassName = "max-w-lg",
   showCloseButton = true,
 }: ModalProps) {
@@ -65,7 +67,7 @@ export function Modal({
             ) : null}
           </div>
         </div>
-        <div className="px-5 py-5">{children}</div>
+        <div className={contentClassName}>{children}</div>
         {footer ? (
           <div className="border-t border-zinc-200 bg-zinc-50 px-5 py-4">
             {footer}
