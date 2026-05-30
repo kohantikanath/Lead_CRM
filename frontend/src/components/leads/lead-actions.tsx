@@ -16,9 +16,15 @@ type LeadActionsProps = {
   lead: Lead;
   onEdit: () => void;
   onView: () => void;
+  variant?: "default" | "compact";
 };
 
-export function LeadActions({ lead, onEdit, onView }: LeadActionsProps) {
+export function LeadActions({
+  lead,
+  onEdit,
+  onView,
+  variant = "default",
+}: LeadActionsProps) {
   const updateLeadStatus = useUpdateLeadStatus();
   const deleteLead = useDeleteLead();
   const [pendingAction, setPendingAction] = useState<LeadAction | null>(null);
@@ -70,7 +76,7 @@ export function LeadActions({ lead, onEdit, onView }: LeadActionsProps) {
       className="flex items-center justify-end gap-2"
       onClick={stopRowClick}
     >
-      <PrimaryStatusAction lead={lead} />
+      {variant === "default" ? <PrimaryStatusAction lead={lead} /> : null}
 
       <DropdownMenu
         buttonLabel="Open lead actions"

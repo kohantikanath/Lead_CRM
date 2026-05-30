@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { LeadFilters } from "@/app/leads/lead-filters";
+import { LeadsKanbanBoard } from "@/app/leads/leads-kanban-board";
 import { LeadActions } from "@/components/leads/lead-actions";
 import { LeadCreateModal } from "@/components/leads/lead-create-modal";
 import { LeadEditModal } from "@/components/leads/lead-edit-modal";
@@ -342,11 +343,15 @@ export function LeadsClient({
               onOpenModal={openModal}
             />
           ) : (
-            <div className="flex min-h-72 items-center justify-center border-t border-zinc-200 px-6 text-center">
-              <p className="text-sm text-zinc-500">
-                Kanban board will be added in the next task.
-              </p>
-            </div>
+            <LeadsKanbanBoard
+              leads={leads}
+              onEditLead={(lead) =>
+                openModal({ id: lead.id, mode: "edit", initialLead: lead })
+              }
+              onViewLead={(lead) =>
+                openModal({ id: lead.id, mode: "view", initialLead: lead })
+              }
+            />
           )}
         </section>
         </div>
